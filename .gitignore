@@ -177,4 +177,9 @@ ssh_scripts/
 *.temp
 *.bak
 *.swp
-*~ 
+*~
+
+# PyPI发布相关
+*.egg-info/
+.publish_config.json
+build/ 
