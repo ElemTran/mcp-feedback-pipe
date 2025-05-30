@@ -1,9 +1,91 @@
-include README.md
-include LICENSE
-include requirements.txt
+# =============================================================================
+# MANIFEST.in - Python包分发清单文件
+# =============================================================================
+# 此文件控制使用 `python setup.py sdist` 或 `pip wheel .` 时
+# 源码分发包(.tar.gz)中包含的文件
+# 
+# 语法说明：
+# - include: 包含单个文件
+# - recursive-include: 递归包含目录中的文件（支持通配符）
+# - exclude/recursive-exclude: 排除文件
+# - prune: 排除整个目录树
+# =============================================================================
+
+# 包含根目录下的重要文件
+include README.md                    # 项目说明
+include LICENSE                      # 开源许可证
+include requirements.txt             # 依赖列表
+include RELEASE_NOTES.md            # 发布说明
+include pyproject.toml              # 项目配置
+
+# 包含配置示例文件
 include claude_config_example.json
 include claude_config_uvx_example.json
-include start_server.bat
-recursive-include src *.py
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co] 
+
+# 包含脚本目录
+recursive-include scripts *.py      # Python脚本
+recursive-include scripts *.bat     # Windows批处理脚本
+recursive-include scripts *.sh      # Shell脚本
+
+# 包含源代码
+recursive-include src *.py          # 所有Python源码
+
+# 包含静态资源和模板
+recursive-include src/mcp_feedback_collector/static *    # Web静态文件
+recursive-include src/mcp_feedback_collector/templates * # HTML模板
+
+# 包含文档目录（docs/目录下的所有文档）
+recursive-include docs *.md         # Markdown文档
+recursive-include docs *.txt        # 文本文档
+recursive-include docs *.rst        # reStructuredText文档
+
+# 包含测试文件（用户可选择是否安装测试）
+recursive-include tests *.py        # 测试Python文件
+recursive-include tests *.txt       # 测试数据文件
+recursive-include tests *.json      # 测试配置文件
+
+# =============================================================================
+# 排除规则 - 避免包含不必要的文件
+# =============================================================================
+
+# 排除Python缓存和编译文件
+recursive-exclude * __pycache__     # Python缓存目录
+recursive-exclude * *.py[co]        # .pyc/.pyo编译文件
+recursive-exclude * *.so            # C扩展动态库
+recursive-exclude * *.dylib         # macOS动态库
+
+# 排除系统和临时文件
+recursive-exclude * .DS_Store       # macOS系统文件
+recursive-exclude * .git*           # Git相关文件
+recursive-exclude * *.tmp           # 临时文件
+recursive-exclude * *.bak           # 备份文件
+
+# 排除开发环境文件
+exclude venv                         # 旧虚拟环境目录
+exclude .venv                        # 新虚拟环境目录
+prune venv/                         # 排除整个venv目录树
+prune .venv/                        # 排除整个.venv目录树
+prune build/                        # 排除构建目录
+prune dist/                         # 排除分发目录
+prune *.egg-info/                   # 排除Python包信息目录
+prune htmlcov/                      # 排除测试覆盖率HTML报告
+prune .pytest_cache/                # 排除pytest缓存
+
+# 排除IDE和编辑器文件
+recursive-exclude * .vscode         # VS Code配置
+recursive-exclude * .idea           # PyCharm/IntelliJ配置
+recursive-exclude * *.swp           # Vim交换文件
+recursive-exclude * *.swo           # Vim交换文件
+
+# =============================================================================
+# 结果说明：
+# 打包后的源码分发包将包含：
+# ├── 项目根文件（README.md, LICENSE等）
+# ├── src/ 目录下的所有Python代码和静态资源
+# ├── docs/ 目录下的所有文档
+# ├── scripts/ 目录下的所有脚本
+# ├── tests/ 目录下的所有测试文件
+# └── 配置文件（claude_config_example.json等）
+# 
+# 不会包含：虚拟环境、缓存文件、IDE配置、Git文件等
+# ============================================================================= 

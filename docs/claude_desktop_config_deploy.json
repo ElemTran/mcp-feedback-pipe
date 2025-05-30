@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+      "args": [
+        "/path/to/mcp-feedback-collector/scripts/mcp_deploy.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "AUTO_MODE": "2"
+      }
+    }
+  }
+} 

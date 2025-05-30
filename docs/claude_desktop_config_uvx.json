@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "mcp-feedback-collector": {
+      "command": "uvx",
+      "args": [
+        "mcp-feedback-collector"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+} 

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 AI工作反馈收集器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI工作反馈收集器</h1>
+            <p>您的反馈对我们很重要</p>
+        </div>
+        
+        <div class="content">
+            <!-- AI工作汇报区域 -->
+            <div class="section">
+                <div class="section-header">
+                    📋 AI工作完成汇报
+                </div>
+                <div class="section-content">
+                    <div class="work-summary" id="workSummary">
+                        {{ work_summary or "等待AI汇报工作内容..." }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 反馈表单 -->
+            <form id="feedbackForm">
+                <!-- 文字反馈 -->
+                <div class="section">
+                    <div class="section-header">
+                        💬 您的文字反馈（可选）
+                    </div>
+                    <div class="section-content">
+                        <div class="form-group">
+                            <textarea 
+                                id="textFeedback" 
+                                name="textFeedback" 
+                                placeholder="请在此输入您的反馈、建议或问题..."
+                                rows="5"
+                            ></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 图片反馈 -->
+                <div class="section">
+                    <div class="section-header">
+                        🖼️ 图片反馈（可选，支持多张）
+                    </div>
+                    <div class="section-content">
+                        <div class="file-upload-area" id="uploadArea">
+                            <div class="upload-icon">📁</div>
+                            <div class="upload-text">点击选择图片文件或拖拽图片到此区域</div>
+                            <button type="button" class="btn">选择文件</button>
+                            <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
+                        </div>
+                        
+                        <div class="paste-area" id="pasteArea">
+                            🖼️ 也可以直接在此区域按 Ctrl+V 粘贴剪贴板图片
+                        </div>
+                        
+                        <div class="image-preview" id="imagePreview"></div>
+                    </div>
+                </div>
+                
+                <!-- 提交按钮 -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        ✅ 提交反馈
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="window.close()">
+                        ❌ 取消
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
+</body>
+</html> 

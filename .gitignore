@@ -170,9 +170,7 @@ ehthumbs.db
 Desktop.ini
 
 # Test files
-test_*.py
-*_test.py
-tests/
+ssh_scripts/
 
 # Temporary files
 *.tmp

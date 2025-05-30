@@ -1,15 +1,24 @@
 """
-MCP Feedback Collector - Interactive user feedback collection for MCP servers.
+MCP反馈收集器 v3.0 - Web版本
+支持SSH环境的现代化反馈收集工具
 
-This package provides a modern GUI-based feedback collection system for
-Model Context Protocol (MCP) servers, allowing AI assistants to gather
-user feedback through an intuitive interface.
+主要功能：
+- collect_feedback(): 收集用户反馈（Web界面）
+- pick_image(): 快速图片选择（Web界面）  
+- get_image_info_tool(): 获取图片信息
 """
 
-__version__ = "2.0.0"
+__version__ = "3.0.0"
 __author__ = "MCP Feedback Collector Team"
-__email__ = "your.email@example.com"
+__description__ = "现代化MCP反馈收集器 - Web版本，完美支持SSH环境"
 
-from .server import main
+# 导入主要功能
+from .server import mcp, collect_feedback, pick_image, get_image_info_tool
 
-__all__ = ["main"] 
+# 导出的公共API
+__all__ = [
+    "mcp", 
+    "collect_feedback", 
+    "pick_image", 
+    "get_image_info_tool"
+] 
