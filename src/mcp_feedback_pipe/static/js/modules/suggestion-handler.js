@@ -156,10 +156,38 @@ export async function submitSuggestion(suggestion) {
     
     const textarea = document.getElementById('textFeedback');
     if (textarea) {
-        textarea.value = suggestion;
-        // 触发输入事件以更新文本框高度
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-        autoResizeTextarea.call(textarea);
+        // 检查文本框是否为空，如果为空则直接设置，否则询问用户意图
+        if (!textarea.value.trim()) {
+            textarea.value = suggestion;
+            // 触发输入事件以更新文本框高度
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+            autoResizeTextarea.call(textarea);
+        } else {
+            // 如果有内容，询问用户是要替换还是追加
+            const userChoice = confirm(
+                `文本框中已有内容。\n\n点击"确定"追加到光标位置\n点击"取消"替换全部内容`
+            );
+            
+            if (userChoice) {
+                // 用户选择追加到光标位置
+                copySuggestion(suggestion);
+                // 等待插入完成后再提交
+                setTimeout(() => {
+                    const form = document.getElementById('feedbackForm');
+                    if (form) {
+                        const event = new Event('submit', { bubbles: true, cancelable: true });
+                        form.dispatchEvent(event);
+                    }
+                }, 100);
+                return; // 提前返回，避免重复提交
+            } else {
+                // 用户选择替换全部内容
+                textarea.value = suggestion;
+                // 触发输入事件以更新文本框高度
+                textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                autoResizeTextarea.call(textarea);
+            }
+        }
     }
     
     // 触发表单提交
