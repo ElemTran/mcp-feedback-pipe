@@ -39,18 +39,36 @@ class ServerManager:
         
         # 启动服务器线程
         def run_server():
-            self.app.run(host='127.0.0.1', port=self.current_port, debug=False)
+            try:
+                self.app.run(host='127.0.0.1', port=self.current_port, debug=False)
+            except Exception as e:
+                print(f"服务器启动失败: {e}")
         
         self.server_thread = threading.Thread(target=run_server, daemon=True)
         self.server_thread.start()
         
-        # 等待服务器启动
-        time.sleep(1)
+        # 更健壮的服务器启动等待机制
+        self._wait_for_server_ready()
         
         # 打开浏览器
         self._open_browser(work_summary, suggest)
         
         return self.current_port
+    
+    def _wait_for_server_ready(self, max_attempts: int = 10) -> bool:
+        """等待服务器就绪"""
+        import requests
+        for attempt in range(max_attempts):
+            try:
+                response = requests.get(f"http://127.0.0.1:{self.current_port}/ping", timeout=1)
+                if response.status_code == 200:
+                    return True
+            except requests.exceptions.RequestException:
+                pass
+            time.sleep(0.5)
+        
+        print("⚠️  服务器启动验证超时，但继续执行")
+        return False
     
     def _open_browser(self, work_summary: str, suggest: str = "") -> None:
         """在浏览器中打开反馈页面"""
@@ -71,10 +89,29 @@ class ServerManager:
     
     def stop_server(self) -> None:
         """停止服务器"""
-        if self.server_thread and self.server_thread.is_alive():
+        try:
+            # 尝试优雅关闭服务器
+            if self.current_port:
+                import requests
+                try:
+                    requests.post(f"http://127.0.0.1:{self.current_port}/close", timeout=2)
+                except requests.exceptions.RequestException:
+                    pass  # 忽略关闭请求失败
+            
+            # 等待服务器线程结束
+            if self.server_thread and self.server_thread.is_alive():
+                self.server_thread.join(timeout=3)
+            
             # 清理资源
             self.feedback_handler.clear_queue()
             self.current_port = None
+            self.app = None
+            
+        except Exception as e:
+            print(f"服务器停止过程中出现错误: {e}")
+            # 强制清理
+            self.current_port = None
+            self.app = None
     
     def get_server_info(self) -> dict:
         """获取服务器信息"""

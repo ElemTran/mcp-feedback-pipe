@@ -135,6 +135,35 @@ def get_image_info_tool(image_path: str) -> str:
 
 def main():
     """主入口点"""
+    import argparse
+    try:
+        from . import __version__
+    except ImportError:
+        from mcp_feedback_pipe import __version__
+    
+    parser = argparse.ArgumentParser(
+        description="MCP反馈通道 - 现代化Web反馈收集工具",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+示例用法:
+  mcp-feedback-pipe                    # 启动MCP服务器
+  mcp-feedback-pipe --version          # 显示版本信息
+  mcp-feedback-pipe --help             # 显示帮助信息
+
+更多信息请访问: https://github.com/ElemTran/mcp-feedback-pipe
+        """
+    )
+    
+    parser.add_argument(
+        '--version', '-v',
+        action='version',
+        version=f'mcp-feedback-pipe {__version__}'
+    )
+    
+    # 解析参数
+    args = parser.parse_args()
+    
+    # 启动MCP服务器
     mcp.run()
 
 

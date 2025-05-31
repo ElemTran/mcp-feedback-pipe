@@ -38,12 +38,12 @@
             <div class="section work-report-section">
                 <div class="section-header">
                     📋 AI工作完成汇报
-                    <button type="button" class="btn btn-small" id="toggleReportBtn" onclick="toggleReportSize()">
+                    <button type="button" class="btn btn-small" id="toggleReportBtn" onclick="toggleReportSize()" aria-label="调整汇报区域大小">
                         📏 调整大小
                     </button>
                 </div>
                 <div class="section-content">
-                    <div class="work-summary" id="workSummary">
+                    <div class="work-summary" id="workSummary" data-raw-content="{{ work_summary or '等待AI汇报工作内容...' }}">
                         {{ work_summary or "等待AI汇报工作内容..." }}
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                 <div class="section feedback-section">
                     <div class="section-header">
                         💬 您的反馈（文字+图片，可选）
-                        <button type="button" class="btn btn-small" id="toggleFeedbackBtn" onclick="toggleFeedbackSize()">
+                        <button type="button" class="btn btn-small" id="toggleFeedbackBtn" onclick="toggleFeedbackSize()" aria-label="展开或收起反馈区域">
                             📏 展开/收起
                         </button>
                     </div>
@@ -75,18 +75,21 @@
                                 name="textFeedback" 
                                 placeholder="请在此输入您的反馈、建议或问题...&#10;💡 提示：可直接按 Ctrl+V 粘贴图片"
                                 rows="3"
+                                aria-label="反馈内容输入框"
+                                aria-describedby="feedbackHelp"
                             ></textarea>
+                            <div id="feedbackHelp" class="sr-only">支持文字输入和图片粘贴，也可以拖拽图片到此区域</div>
                         </div>
                         
                         <!-- 操作按钮组 -->
                         <div class="inline-button-group">
-                            <button type="button" class="btn btn-icon btn-compact" id="uploadBtn" title="上传图片">
+                            <button type="button" class="btn btn-icon btn-compact" id="uploadBtn" title="上传图片" aria-label="选择图片文件上传">
                                 🖼️
                             </button>
-                            <button type="button" class="btn btn-secondary btn-compact" onclick="window.close()">
+                            <button type="button" class="btn btn-secondary btn-compact" onclick="window.close()" aria-label="取消并关闭窗口">
                                 ❌ 取消
                             </button>
-                            <button type="submit" class="btn btn-success btn-compact" id="submitBtn">
+                            <button type="submit" class="btn btn-success btn-compact" id="submitBtn" aria-label="提交反馈内容">
                                 ✅ 提交反馈
                             </button>
                         </div>
@@ -102,6 +105,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/feedback.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='js/feedback-main.js') }}"></script>
 </body>
 </html> 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "mcp-feedback-pipe"
-version = "3.0.0"
+version = "3.0.2"
 description = "A modern Web-based MCP server for interactive user feedback collection - perfect for SSH environments"
 readme = "README.md"
 license = {text = "MIT"}

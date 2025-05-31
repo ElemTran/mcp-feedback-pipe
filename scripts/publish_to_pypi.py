@@ -2,6 +2,7 @@
 """
 MCP反馈通道 - PyPI发布脚本
 用于将项目发布到Python Package Index (PyPI)
+支持版本管理和自动更新
 """
 
 import os
@@ -10,6 +11,15 @@ import subprocess
 import getpass
 import json
 from pathlib import Path
+from dotenv import load_dotenv
+
+# 导入版本管理器
+try:
+    from version_manager import VersionManager
+    VERSION_MANAGER_AVAILABLE = True
+except ImportError:
+    print("⚠️  版本管理器不可用，将使用基础功能")
+    VERSION_MANAGER_AVAILABLE = False
 
 def mask_token(cmd):
     """脱敏token信息"""
@@ -100,9 +110,17 @@ def build_package():
 
 def get_testpypi_token():
     """获取TestPyPI API token"""
+    # 首先尝试从环境变量读取
+    token = os.getenv('TESTPYPI_TOKEN')
+    
+    if token and token.startswith("pypi-"):
+        print("🔑 使用环境变量中的TestPyPI token")
+        return token
+    
     print("\n🔑 TestPyPI认证配置")
     print("请访问 https://test.pypi.org/manage/account/token/ 创建TestPyPI API token")
     print("Token范围选择: 'Entire account' (首次发布) 或 'Scope to project' (后续)")
+    print("💡 提示: 您可以将token保存到.env文件中的TESTPYPI_TOKEN变量")
     
     token = getpass.getpass("请输入TestPyPI API token (格式: pypi-...): ")
     
@@ -114,9 +132,17 @@ def get_testpypi_token():
 
 def get_pypi_token():
     """获取PyPI API token"""
+    # 首先尝试从环境变量读取
+    token = os.getenv('PYPI_TOKEN')
+    
+    if token and token.startswith("pypi-"):
+        print("🔑 使用环境变量中的PyPI token")
+        return token
+    
     print("\n🔑 PyPI认证配置")
     print("请访问 https://pypi.org/manage/account/token/ 创建PyPI API token")
     print("Token范围选择: 'Entire account' (首次发布) 或 'Scope to project' (后续)")
+    print("💡 提示: 您可以将token保存到.env文件中的PYPI_TOKEN变量")
     
     token = getpass.getpass("请输入PyPI API token (格式: pypi-...): ")
     
@@ -151,7 +177,15 @@ def publish_to_pypi(token):
     """发布到正式PyPI"""
     print("🚀 发布到正式PyPI...")
     
-    confirm = input("确认发布到正式PyPI？这将公开发布包 (y/N): ")
+    # 检查是否自动确认
+    auto_confirm = os.getenv('AUTO_CONFIRM_PYPI', 'false').lower() == 'true'
+    
+    if auto_confirm:
+        print("⚡ 自动确认模式已启用（来自环境变量）")
+        confirm = 'y'
+    else:
+        confirm = input("确认发布到正式PyPI？这将公开发布包 (y/N): ")
+    
     if confirm.lower() != 'y':
         print("❌ 用户取消发布")
         return False
@@ -200,6 +234,73 @@ def save_publish_config(project_info, success_testpypi, success_pypi):
     
     print(f"📝 发布配置已保存到 {config_path}")
 
+def manage_version():
+    """版本管理功能"""
+    if not VERSION_MANAGER_AVAILABLE:
+        print("⚠️  版本管理器不可用，跳过版本管理")
+        return False
+    
+    print("\n📋 版本管理选项:")
+    print("1. 使用当前版本")
+    print("2. 自动递增版本号")
+    print("3. 手动指定版本号")
+    
+    choice = input("请选择 (1-3): ").strip()
+    
+    if choice == "1":
+        print("✅ 使用当前版本")
+        return False
+    
+    # 初始化版本管理器
+    vm = VersionManager(Path.cwd())
+    
+    if choice == "2":
+        # 自动递增版本
+        info = vm.get_version_info()
+        print(f"\n📈 当前版本: {info['current_version']}")
+        print("选择递增类型:")
+        print(f"  1. Patch (补丁): {info['next_patch']}")
+        print(f"  2. Minor (次要): {info['next_minor']}")
+        print(f"  3. Major (主要): {info['next_major']}")
+        
+        inc_choice = input("请选择递增类型 (1-3): ").strip()
+        if inc_choice == "1":
+            new_version = info['next_patch']
+        elif inc_choice == "2":
+            new_version = info['next_minor']
+        elif inc_choice == "3":
+            new_version = info['next_major']
+        else:
+            print("❌ 无效选择")
+            return False
+            
+    elif choice == "3":
+        # 手动指定版本
+        new_version = input("请输入新版本号 (格式: x.y.z): ").strip()
+        try:
+            vm.parse_version(new_version)
+        except ValueError as e:
+            print(f"❌ {e}")
+            return False
+    else:
+        print("❌ 无效选择")
+        return False
+    
+    # 确认并更新版本
+    print(f"\n🔄 准备更新版本: {vm.current_version} → {new_version}")
+    confirm = input("确认更新版本? (y/N): ").strip().lower()
+    
+    if confirm in ['y', 'yes']:
+        if vm.update_all_versions(new_version):
+            print(f"✅ 版本更新成功: {new_version}")
+            return True
+        else:
+            print("❌ 版本更新失败")
+            return False
+    else:
+        print("❌ 用户取消版本更新")
+        return False
+
 def main():
     """主函数"""
     print("🎯 MCP反馈通道 - PyPI发布工具")
@@ -210,7 +311,20 @@ def main():
         print("❌ 请在项目根目录运行此脚本")
         sys.exit(1)
     
+    # 加载环境变量
+    env_file = Path(".env")
+    if env_file.exists():
+        load_dotenv(env_file)
+        print("✅ 已加载.env环境变量")
+    else:
+        print("⚠️  未找到.env文件，将使用交互式输入")
+    
     try:
+        # 0. 版本管理
+        version_updated = manage_version()
+        if version_updated:
+            print("💡 版本已更新，继续发布流程...")
+        
         # 1. 检查依赖
         check_dependencies()
         
