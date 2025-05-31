@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-测试MCP反馈收集器Web版本 v3.0
+测试MCP反馈通道Web版本 v3.0
 演示重构后的模块化架构和SSH环境兼容性
 """
 
@@ -18,35 +18,35 @@ def test_imports():
     print("📦 测试模块导入...")
     
     try:
-        from mcp_feedback_collector.server_manager import ServerManager
+        from mcp_feedback_pipe.server_manager import ServerManager
         print("   ✅ ServerManager 模块")
     except ImportError as e:
         print(f"   ❌ ServerManager 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_collector.app import FeedbackApp
+        from mcp_feedback_pipe.app import FeedbackApp
         print("   ✅ FeedbackApp 模块")
     except ImportError as e:
         print(f"   ❌ FeedbackApp 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_collector.feedback_handler import FeedbackHandler
+        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
         print("   ✅ FeedbackHandler 模块")
     except ImportError as e:
         print(f"   ❌ FeedbackHandler 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_collector.utils import get_image_info
+        from mcp_feedback_pipe.utils import get_image_info
         print("   ✅ Utils 模块")
     except ImportError as e:
         print(f"   ❌ Utils 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_collector import collect_feedback, pick_image
+        from mcp_feedback_pipe import collect_feedback, pick_image
         print("   ✅ 主要工具函数")
     except ImportError as e:
         print(f"   ❌ 主要工具函数导入失败: {e}")
@@ -60,7 +60,7 @@ def test_web_interface():
     print("="*50)
     
     try:
-        from mcp_feedback_collector.server_manager import ServerManager
+        from mcp_feedback_pipe.server_manager import ServerManager
         
         # 创建服务器管理器
         server_manager = ServerManager()
@@ -178,7 +178,7 @@ def check_file_structure():
     print("\n📁 检查文件结构")
     print("="*25)
     
-    base_path = project_root / "src" / "mcp_feedback_collector"
+    base_path = project_root / "src" / "mcp_feedback_pipe"
     
     files_to_check = [
         "server.py",
@@ -204,7 +204,7 @@ def check_file_structure():
 
 def main():
     """主测试函数"""
-    print("🎯 MCP反馈收集器 v3.0 重构版本测试")
+    print("🎯 MCP反馈通道 v3.0 重构版本测试")
     print("🏗️ 模块化架构 + 前后端分离 + SSH兼容")
     print()
     

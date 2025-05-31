@@ -1,9 +1,9 @@
-# 📁 MCP反馈收集器项目结构
+# 📁 MCP反馈通道项目结构
 
 ## 📋 整体结构
 
 ```
-mcp-feedback-collector/
+mcp-feedback-pipe/
 ├── .venv/                          # 虚拟环境 (新)
 ├── docs/                           # 文档目录 (新)
 │   ├── README.md                   # 文档索引
@@ -13,7 +13,7 @@ mcp-feedback-collector/
 ├── scripts/                        # 脚本目录 (新)
 │   └── start_server.py            # 启动脚本
 ├── src/                           # 源代码目录
-│   └── mcp_feedback_collector/
+│   └── mcp_feedback_pipe/
 │       ├── static/                # 静态资源
 │       │   ├── css/
 │       │   └── js/
@@ -83,7 +83,7 @@ tests/
 
 ### 📦 源代码组织
 ```
-src/mcp_feedback_collector/
+src/mcp_feedback_pipe/
 ├── server.py          # MCP工具定义 (120行)
 ├── app.py            # Flask Web应用 (114行)
 ├── server_manager.py # 服务器管理 (82行)

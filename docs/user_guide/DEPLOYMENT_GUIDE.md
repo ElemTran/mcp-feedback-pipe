@@ -1,6 +1,6 @@
-# 🚀 MCP反馈收集器部署指南
+# 🚀 MCP反馈通道部署指南
 
-本指南将帮助您在各种环境中部署MCP反馈收集器v3.0。
+本指南将帮助您在各种环境中部署MCP反馈通道v3.0。
 
 ## 📋 部署方式对比
 
@@ -34,17 +34,17 @@ uvx --version
 
 ### 2. 获取项目代码
 ```bash
-git clone https://github.com/your-username/mcp-feedback-collector.git
-cd mcp-feedback-collector
+git clone https://github.com/your-username/mcp-feedback-pipe.git
+cd mcp-feedback-pipe
 ```
 
 ### 3. 测试uvx部署
 ```bash
 # 测试运行
-uvx --from . mcp-feedback-collector
+uvx --from . mcp-feedback-pipe
 
 # 验证输出类似：
-# MCP反馈收集器 v3.0 启动成功...
+# MCP反馈通道 v3.0 启动成功...
 # 等待来自MCP客户端的连接...
 ```
 
@@ -54,11 +54,11 @@ uvx --from . mcp-feedback-collector
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "uvx",
       "args": [
-        "--from", "/path/to/mcp-feedback-collector",
-        "mcp-feedback-collector"
+        "--from", "/path/to/mcp-feedback-pipe",
+        "mcp-feedback-pipe"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8",
@@ -74,11 +74,11 @@ uvx --from . mcp-feedback-collector
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "uvx",
       "args": [
-        "--from", "/path/to/mcp-feedback-collector",
-        "mcp-feedback-collector"
+        "--from", "/path/to/mcp-feedback-pipe",
+        "mcp-feedback-pipe"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8",
@@ -105,8 +105,8 @@ uvx --from . mcp-feedback-collector
 
 ### 1. 克隆项目
 ```bash
-git clone https://github.com/your-username/mcp-feedback-collector.git
-cd mcp-feedback-collector
+git clone https://github.com/your-username/mcp-feedback-pipe.git
+cd mcp-feedback-pipe
 ```
 
 ### 2. 创建虚拟环境
@@ -127,7 +127,7 @@ pip install -r requirements.txt
 
 ### 4. 验证安装
 ```bash
-python src/mcp_feedback_collector/server.py
+python src/mcp_feedback_pipe/server.py
 ```
 
 ### 5. 配置MCP客户端
@@ -136,10 +136,10 @@ python src/mcp_feedback_collector/server.py
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "/absolute/path/to/.venv/bin/python",
       "args": [
-        "/absolute/path/to/src/mcp_feedback_collector/server.py"
+        "/absolute/path/to/src/mcp_feedback_pipe/server.py"
       ],
       "env": {
         "PYTHONPATH": "/absolute/path/to/src",
@@ -163,27 +163,27 @@ python src/mcp_feedback_collector/server.py
 
 ### 1. 构建Docker镜像
 ```bash
-docker build -t mcp-feedback-collector:v3.0 .
+docker build -t mcp-feedback-pipe:v3.0 .
 ```
 
 ### 2. 运行容器
 ```bash
 docker run -d \
-  --name mcp-feedback-collector \
+  --name mcp-feedback-pipe \
   -p 8080:8080 \
   -v $(pwd)/data:/app/data \
-  mcp-feedback-collector:v3.0
+  mcp-feedback-pipe:v3.0
 ```
 
 ### 3. MCP配置
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "docker",
       "args": [
-        "exec", "mcp-feedback-collector",
-        "python", "/app/src/mcp_feedback_collector/server.py"
+        "exec", "mcp-feedback-pipe",
+        "python", "/app/src/mcp_feedback_pipe/server.py"
       ],
       "env": {
         "MCP_USE_WEB": "true"
@@ -221,7 +221,7 @@ python scripts/mcp_deploy.py
 ### 1. 服务器端配置
 ```bash
 # 在服务器上部署（推荐uvx方式）
-uvx --from /path/to/project mcp-feedback-collector
+uvx --from /path/to/project mcp-feedback-pipe
 ```
 
 ### 2. 本地端口转发
@@ -249,11 +249,11 @@ ssh -D 1080 username@server-ip
 ### 1. 基础功能测试
 ```bash
 # uvx方式
-uvx --from . mcp-feedback-collector
+uvx --from . mcp-feedback-pipe
 
 # 传统方式
 source .venv/bin/activate
-python src/mcp_feedback_collector/server.py
+python src/mcp_feedback_pipe/server.py
 ```
 
 ### 2. Web界面测试
@@ -293,7 +293,7 @@ export PATH="$HOME/.local/bin:$PATH"
 uvx cache clean
 
 # 重新运行
-uvx --from . mcp-feedback-collector
+uvx --from . mcp-feedback-pipe
 ```
 
 ### 传统部署问题
@@ -322,7 +322,7 @@ which python
 netstat -tlnp | grep :8080
 
 # 停止冲突进程
-pkill -f "mcp_feedback_collector"
+pkill -f "mcp_feedback_pipe"
 ```
 
 #### 问题2: 浏览器无法访问
@@ -334,7 +334,7 @@ pkill -f "mcp_feedback_collector"
 
 ### 1. 系统服务配置
 ```ini
-# /etc/systemd/system/mcp-feedback-collector.service
+# /etc/systemd/system/mcp-feedback-pipe.service
 [Unit]
 Description=MCP Feedback Collector
 After=network.target
@@ -342,8 +342,8 @@ After=network.target
 [Service]
 Type=simple
 User=mcp-user
-WorkingDirectory=/opt/mcp-feedback-collector
-ExecStart=/usr/local/bin/uvx --from /opt/mcp-feedback-collector mcp-feedback-collector
+WorkingDirectory=/opt/mcp-feedback-pipe
+ExecStart=/usr/local/bin/uvx --from /opt/mcp-feedback-pipe mcp-feedback-pipe
 Restart=always
 RestartSec=10
 
@@ -353,14 +353,14 @@ WantedBy=multi-user.target
 
 ### 2. 启动服务
 ```bash
-sudo systemctl enable mcp-feedback-collector
-sudo systemctl start mcp-feedback-collector
-sudo systemctl status mcp-feedback-collector
+sudo systemctl enable mcp-feedback-pipe
+sudo systemctl start mcp-feedback-pipe
+sudo systemctl status mcp-feedback-pipe
 ```
 
 ### 3. 反向代理配置
 ```nginx
-# /etc/nginx/sites-available/mcp-feedback-collector
+# /etc/nginx/sites-available/mcp-feedback-pipe
 server {
     listen 80;
     server_name mcp.yourdomain.com;
@@ -419,4 +419,4 @@ server {
 - **生产环境**: Docker + 系统服务
 - **SSH环境**: uvx + 端口转发
 
-选择适合您环境的部署方式，开始使用MCP反馈收集器吧！
+选择适合您环境的部署方式，开始使用MCP反馈通道吧！

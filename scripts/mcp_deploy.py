@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCP反馈收集器部署脚本 v3.0
+MCP反馈通道部署脚本 v3.0
 支持Web架构和SSH环境
 """
 import os
@@ -29,10 +29,10 @@ def start_web_service():
     """启动Web服务"""
     print("🌐 启动Web服务...")
     
-    from mcp_feedback_collector.server_manager import ServerManager
+    from mcp_feedback_pipe.server_manager import ServerManager
     
     sm = ServerManager()
-    port = sm.start_server("MCP反馈收集器Web服务已启动", timeout_seconds=60)
+    port = sm.start_server("MCP反馈通道Web服务已启动", timeout_seconds=60)
     
     print(f"✅ Web服务已启动在端口: {port}")
     print(f"📱 本地访问: http://127.0.0.1:{port}")
@@ -56,7 +56,7 @@ def start_mcp_server():
     print("🚀 启动MCP服务器...")
     
     try:
-        from mcp_feedback_collector.server import main
+        from mcp_feedback_pipe.server import main
         main()
     except Exception as e:
         print(f"❌ MCP服务器启动失败: {e}")
@@ -65,7 +65,7 @@ def start_mcp_server():
 
 def main():
     """主函数"""
-    print("🔧 MCP反馈收集器 v3.0 部署")
+    print("🔧 MCP反馈通道 v3.0 部署")
     print("=" * 40)
     
     # 设置环境

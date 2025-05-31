@@ -1,5 +1,5 @@
 """
-MCP反馈收集器服务器 v3.0
+MCP反馈通道服务器 v3.0
 基于Web的现代化反馈收集系统，支持SSH环境
 """
 
@@ -23,13 +23,13 @@ try:
     from .utils import get_image_info
 except ImportError:
     # 如果相对导入失败，尝试绝对导入
-    from mcp_feedback_collector.server_manager import ServerManager
-    from mcp_feedback_collector.utils import get_image_info
+    from mcp_feedback_pipe.server_manager import ServerManager
+    from mcp_feedback_pipe.utils import get_image_info
 
 
 # 创建MCP服务器
 mcp = FastMCP(
-    "MCP反馈收集器 v3.0",
+    "MCP反馈通道 v3.0",
     dependencies=["flask", "pillow"]
 )
 
@@ -56,7 +56,7 @@ def collect_feedback(work_summary: str = "", timeout_seconds: int = 300) -> List
         # 启动Web服务器
         port = server_manager.start_server(work_summary, timeout_seconds)
         
-        print(f"📱 反馈收集器已启动: http://127.0.0.1:{port}")
+        print(f"📱 反馈通道已启动: http://127.0.0.1:{port}")
         print(f"⏰ 等待用户反馈... (超时: {timeout_seconds}秒)")
         print("💡 SSH环境请配置端口转发后访问")
         
@@ -72,7 +72,7 @@ def collect_feedback(work_summary: str = "", timeout_seconds: int = 300) -> List
     except ImportError as e:
         raise Exception(f"依赖缺失: {str(e)}")
     except Exception as e:
-        raise Exception(f"启动反馈收集器失败: {str(e)}")
+        raise Exception(f"启动反馈通道失败: {str(e)}")
     finally:
         # 清理资源
         server_manager.stop_server()

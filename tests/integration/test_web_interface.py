@@ -8,8 +8,8 @@ import json
 import base64
 from unittest.mock import patch, MagicMock
 
-from mcp_feedback_collector.app import FeedbackApp
-from mcp_feedback_collector.feedback_handler import FeedbackHandler
+from mcp_feedback_pipe.app import FeedbackApp
+from mcp_feedback_pipe.feedback_handler import FeedbackHandler
 
 
 class TestWebInterfaceIntegration:
@@ -30,7 +30,7 @@ class TestWebInterfaceIntegration:
         
         response = client.get('/')
         assert response.status_code == 200
-        assert '反馈收集器' in response.data.decode('utf-8')
+        assert '反馈通道' in response.data.decode('utf-8')
     
     def test_index_with_work_summary(self, app):
         """测试带工作汇报的主页"""

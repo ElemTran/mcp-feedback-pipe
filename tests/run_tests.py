@@ -37,7 +37,7 @@ def run_command(cmd, description):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="MCP反馈收集器测试运行器")
+    parser = argparse.ArgumentParser(description="MCP反馈通道测试运行器")
     parser.add_argument('--type', choices=['unit', 'integration', 'e2e', 'all'], 
                        default='all', help='测试类型')
     parser.add_argument('--coverage', action='store_true', help='生成覆盖率报告')
@@ -54,7 +54,7 @@ def main():
         pytest_cmd += " -v"
     
     if args.coverage:
-        pytest_cmd += " --cov=src/mcp_feedback_collector --cov-report=term-missing --cov-report=html"
+        pytest_cmd += " --cov=src/mcp_feedback_pipe --cov-report=term-missing --cov-report=html"
     
     if args.parallel:
         pytest_cmd += " -n auto"
@@ -76,7 +76,7 @@ def main():
         ])
     
     # 执行测试
-    print("🎯 MCP反馈收集器 v3.0 测试运行器")
+    print("🎯 MCP反馈通道 v3.0 测试运行器")
     print(f"📊 测试类型: {args.type}")
     print(f"📈 覆盖率报告: {'是' if args.coverage else '否'}")
     print(f"⚡ 并行运行: {'是' if args.parallel else '否'}")

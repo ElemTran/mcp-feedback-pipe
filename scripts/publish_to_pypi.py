@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-MCP反馈收集器 - PyPI发布脚本
+MCP反馈通道 - PyPI发布脚本
 用于将项目发布到Python Package Index (PyPI)
 """
 
@@ -56,7 +56,7 @@ def get_project_info():
         sys.exit(1)
     
     return {
-        "name": "mcp-feedback-collector",
+        "name": "mcp-feedback-pipe",
         "version": version
     }
 
@@ -105,7 +105,7 @@ def publish_to_testpypi(token):
     
     if result.returncode == 0:
         print("✅ TestPyPI发布成功!")
-        print("🔗 查看: https://test.pypi.org/project/mcp-feedback-collector/")
+        print("🔗 查看: https://test.pypi.org/project/mcp-feedback-pipe/")
         return True
     else:
         print(f"❌ TestPyPI发布失败: {result.stderr}")
@@ -125,7 +125,7 @@ def publish_to_pypi(token):
     
     if result.returncode == 0:
         print("🎉 正式PyPI发布成功!")
-        print("🔗 查看: https://pypi.org/project/mcp-feedback-collector/")
+        print("🔗 查看: https://pypi.org/project/mcp-feedback-pipe/")
         return True
     else:
         print(f"❌ 正式PyPI发布失败: {result.stderr}")
@@ -139,7 +139,7 @@ def test_installation():
     run_command("uvx cache clean", check=False)
     
     # 测试从PyPI安装
-    print("测试命令: uvx mcp-feedback-collector")
+    print("测试命令: uvx mcp-feedback-pipe")
     print("如果成功，应该启动MCP服务器")
 
 def save_publish_config(project_info, success_testpypi, success_pypi):
@@ -161,7 +161,7 @@ def save_publish_config(project_info, success_testpypi, success_pypi):
 
 def main():
     """主函数"""
-    print("🎯 MCP反馈收集器 - PyPI发布工具")
+    print("🎯 MCP反馈通道 - PyPI发布工具")
     print("=" * 50)
     
     # 检查是否在项目根目录
@@ -209,7 +209,7 @@ def main():
         
         print("\n🎊 发布流程完成!")
         if success_pypi:
-            print("🌟 用户现在可以使用: uvx mcp-feedback-collector")
+            print("🌟 用户现在可以使用: uvx mcp-feedback-pipe")
         
     except KeyboardInterrupt:
         print("\n❌ 用户中断发布")

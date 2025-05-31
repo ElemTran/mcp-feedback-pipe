@@ -1,6 +1,6 @@
 # 🔒 SSH环境配置指南
 
-专为Windows用户通过SSH连接Linux服务器开发MCP反馈收集器而设计。
+专为Windows用户通过SSH连接Linux服务器开发MCP反馈通道而设计。
 
 ## 📋 环境概述
 
@@ -58,7 +58,7 @@ ssh -L 5000:localhost:5000 username@your-server-ip
 ### 2. 在服务器上启动MCP服务
 ```bash
 # 在SSH会话中执行
-cd /path/to/mcp-feedback-collector
+cd /path/to/mcp-feedback-pipe
 source .venv/bin/activate
 python scripts/start_server.py
 ```
@@ -149,12 +149,12 @@ python tests/integration/deploy_test.py
 
 ```batch
 @echo off
-echo 启动MCP反馈收集器开发环境...
+echo 启动MCP反馈通道开发环境...
 echo 正在建立SSH隧道...
 start /B ssh -L 5000:localhost:5000 username@your-server-ip
 timeout /t 3
 echo 请在SSH会话中启动服务：
-echo   cd /path/to/mcp-feedback-collector
+echo   cd /path/to/mcp-feedback-pipe
 echo   source .venv/bin/activate  
 echo   python scripts/start_server.py
 echo.
@@ -166,7 +166,7 @@ pause
 创建 `start_mcp_dev.ps1`：
 
 ```powershell
-Write-Host "🚀 启动MCP反馈收集器开发环境" -ForegroundColor Green
+Write-Host "🚀 启动MCP反馈通道开发环境" -ForegroundColor Green
 Write-Host "📡 建立SSH隧道..." -ForegroundColor Yellow
 
 # 启动SSH隧道
@@ -176,7 +176,7 @@ Start-Sleep 3
 
 Write-Host "✅ SSH隧道已建立" -ForegroundColor Green
 Write-Host "📋 请在SSH会话中执行以下命令:" -ForegroundColor Cyan
-Write-Host "   cd /path/to/mcp-feedback-collector" -ForegroundColor White
+Write-Host "   cd /path/to/mcp-feedback-pipe" -ForegroundColor White
 Write-Host "   source .venv/bin/activate" -ForegroundColor White
 Write-Host "   python scripts/start_server.py" -ForegroundColor White
 Write-Host ""

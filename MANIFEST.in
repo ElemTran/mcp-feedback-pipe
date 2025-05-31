@@ -31,8 +31,8 @@ recursive-include scripts *.sh      # Shell脚本
 recursive-include src *.py          # 所有Python源码
 
 # 包含静态资源和模板
-recursive-include src/mcp_feedback_collector/static *    # Web静态文件
-recursive-include src/mcp_feedback_collector/templates * # HTML模板
+recursive-include src/mcp_feedback_pipe/static *    # Web静态文件
+recursive-include src/mcp_feedback_pipe/templates * # HTML模板
 
 # 包含文档目录（docs/目录下的所有文档）
 recursive-include docs *.md         # Markdown文档

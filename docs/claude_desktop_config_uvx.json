@@ -1,9 +1,9 @@
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "uvx",
       "args": [
-        "mcp-feedback-collector"
+        "mcp-feedback-pipe"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8",

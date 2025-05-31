@@ -1,5 +1,5 @@
 """
-MCP反馈收集器测试配置
+MCP反馈通道测试配置
 """
 import os
 import sys
@@ -25,14 +25,14 @@ def src_path():
 @pytest.fixture
 def feedback_handler():
     """创建反馈处理器实例"""
-    from mcp_feedback_collector.feedback_handler import FeedbackHandler
+    from mcp_feedback_pipe.feedback_handler import FeedbackHandler
     return FeedbackHandler()
 
 @pytest.fixture
 def mock_flask_app():
     """创建模拟Flask应用"""
-    from mcp_feedback_collector.app import FeedbackApp
-    from mcp_feedback_collector.feedback_handler import FeedbackHandler
+    from mcp_feedback_pipe.app import FeedbackApp
+    from mcp_feedback_pipe.feedback_handler import FeedbackHandler
     
     handler = FeedbackHandler()
     app = FeedbackApp(handler)

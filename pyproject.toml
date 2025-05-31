@@ -1,106 +1,146 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "mcp-feedback-collector"
+name = "mcp-feedback-pipe"
 version = "3.0.0"
-description = "A modern MCP server for interactive user feedback collection with Web GUI (SSH-compatible)"
+description = "A modern Web-based MCP server for interactive user feedback collection - perfect for SSH environments"
 readme = "README.md"
-requires-python = ">=3.8"
 license = {text = "MIT"}
-authors = [
-    {name = "MCP Feedback Collector Team", email = "contact@example.com"},
-]
-keywords = [
-    "mcp",
-    "model-context-protocol", 
-    "feedback",
-    "web",
-    "gui",
-    "interactive",
-    "ai-assistant",
-    "claude",
-    "cursor",
-    "image-picker",
-    "ssh-compatible",
-    "uvx"
-]
+authors = [{name = "ElemTran", email = "your.email@example.com"}]
+maintainers = [{name = "ElemTran", email = "your.email@example.com"}]
+keywords = ["mcp", "feedback", "web", "ssh", "flask", "uvx", "model-context-protocol"]
 classifiers = [
-    "Development Status :: 4 - Beta",
-    "Environment :: Console",
-    "Environment :: Web Environment",
-    "Environment :: MacOS X",
-    "Environment :: Win32 (MS Windows)",
-    "Environment :: X11 Applications",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
-    "Intended Audience :: End Users/Desktop",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "Topic :: Communications",
-    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: System :: Networking",
-    "Topic :: Utilities",
+    "Environment :: Web Environment",
+    "Framework :: Flask",
 ]
+requires-python = ">=3.8"
 dependencies = [
-    "mcp>=1.0.0",
+    "mcp>=1.9.0",
+    "flask>=3.0.0",
     "pillow>=8.0.0",
-    "flask>=2.0.0",
+    "python-multipart>=0.0.20",
+    "python-dotenv>=1.0.0",
+    "uvicorn>=0.30.0",
+    "starlette>=0.40.0",
+    "sse-starlette>=2.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=6.0",
-    "pytest-cov",
-    "black",
-    "isort",
-    "mypy",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
 ]
 test = [
-    "pytest>=6.0",
-    "pytest-cov",
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0", 
+    "pytest-asyncio>=0.21.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-username/mcp-feedback-collector"
-Repository = "https://github.com/your-username/mcp-feedback-collector"
-Documentation = "https://github.com/your-username/mcp-feedback-collector#readme"
-"Bug Tracker" = "https://github.com/your-username/mcp-feedback-collector/issues"
+Homepage = "https://github.com/ElemTran/mcp-feedback-pipe"
+Repository = "https://github.com/ElemTran/mcp-feedback-pipe"
+Documentation = "https://github.com/ElemTran/mcp-feedback-pipe/blob/main/docs/"
+"Bug Tracker" = "https://github.com/ElemTran/mcp-feedback-pipe/issues"
+Changelog = "https://github.com/ElemTran/mcp-feedback-pipe/blob/main/RELEASE_NOTES.md"
 
 [project.scripts]
-mcp-feedback-collector = "mcp_feedback_collector.server:main"
+mcp-feedback-pipe = "mcp_feedback_pipe.server:main"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/mcp_feedback_collector"]
+[tool.setuptools]
+package-dir = {"" = "src"}
 
-[tool.hatch.build.targets.sdist]
-include = [
-    "/src",
-    "/docs",
-    "/README.md",
-    "/LICENSE",
-    "/requirements.txt",
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+mcp_feedback_pipe = [
+    "static/**/*",
+    "templates/**/*",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--cov=src/mcp_feedback_pipe",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "-v"
+]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/mcp_feedback_pipe"]
+omit = [
+    "tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.black]
 line-length = 88
 target-version = ['py38']
-
-[tool.isort]
-profile = "black"
-line_length = 88
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
 
 [tool.mypy]
 python_version = "3.8"
 warn_return_any = true
 warn_unused_configs = true
-disallow_untyped_defs = true 
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false 

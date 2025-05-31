@@ -16,22 +16,22 @@ def test_imports():
     print("🔍 测试模块导入...")
     
     try:
-        import mcp_feedback_collector
-        print("✅ mcp_feedback_collector 导入成功")
+        import mcp_feedback_pipe
+        print("✅ mcp_feedback_pipe 导入成功")
         
-        from mcp_feedback_collector.server import collect_feedback, pick_image
+        from mcp_feedback_pipe.server import collect_feedback, pick_image
         print("✅ server 模块导入成功")
         
-        from mcp_feedback_collector.app import FeedbackApp
+        from mcp_feedback_pipe.app import FeedbackApp
         print("✅ app 模块导入成功")
         
-        from mcp_feedback_collector.feedback_handler import FeedbackHandler
+        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
         print("✅ feedback_handler 模块导入成功")
         
-        from mcp_feedback_collector.server_manager import ServerManager
+        from mcp_feedback_pipe.server_manager import ServerManager
         print("✅ server_manager 模块导入成功")
         
-        from mcp_feedback_collector.utils import get_image_info
+        from mcp_feedback_pipe.utils import get_image_info
         print("✅ utils 模块导入成功")
         
         return True
@@ -46,15 +46,15 @@ def test_file_structure():
     
     base_path = Path(__file__).parent.parent
     required_files = [
-        "src/mcp_feedback_collector/__init__.py",
-        "src/mcp_feedback_collector/server.py",
-        "src/mcp_feedback_collector/app.py",
-        "src/mcp_feedback_collector/feedback_handler.py",
-        "src/mcp_feedback_collector/server_manager.py",
-        "src/mcp_feedback_collector/utils.py",
-        "src/mcp_feedback_collector/templates/feedback.html",
-        "src/mcp_feedback_collector/static/css/styles.css",
-        "src/mcp_feedback_collector/static/js/feedback.js",
+        "src/mcp_feedback_pipe/__init__.py",
+        "src/mcp_feedback_pipe/server.py",
+        "src/mcp_feedback_pipe/app.py",
+        "src/mcp_feedback_pipe/feedback_handler.py",
+        "src/mcp_feedback_pipe/server_manager.py",
+        "src/mcp_feedback_pipe/utils.py",
+        "src/mcp_feedback_pipe/templates/feedback.html",
+        "src/mcp_feedback_pipe/static/css/styles.css",
+        "src/mcp_feedback_pipe/static/js/feedback.js",
         "tests/__init__.py",
         "tests/unit/__init__.py",
         "tests/integration/__init__.py",
@@ -82,11 +82,11 @@ def test_line_count():
     
     base_path = Path(__file__).parent.parent
     src_files = [
-        "src/mcp_feedback_collector/server.py",
-        "src/mcp_feedback_collector/app.py", 
-        "src/mcp_feedback_collector/feedback_handler.py",
-        "src/mcp_feedback_collector/server_manager.py",
-        "src/mcp_feedback_collector/utils.py",
+        "src/mcp_feedback_pipe/server.py",
+        "src/mcp_feedback_pipe/app.py", 
+        "src/mcp_feedback_pipe/feedback_handler.py",
+        "src/mcp_feedback_pipe/server_manager.py",
+        "src/mcp_feedback_pipe/utils.py",
     ]
     
     max_lines = 250
@@ -137,7 +137,7 @@ def test_dependencies():
 
 def main():
     """主函数"""
-    print("🎯 MCP反馈收集器 v3.0 验证测试")
+    print("🎯 MCP反馈通道 v3.0 验证测试")
     print("=" * 60)
     
     tests = [

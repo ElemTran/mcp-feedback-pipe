@@ -54,7 +54,7 @@ def generate_ssh_commands(config):
 
 def generate_ssh_config(config):
     """生成SSH配置文件内容"""
-    ssh_config = f"""# MCP反馈收集器SSH配置
+    ssh_config = f"""# MCP反馈通道SSH配置
 Host mcp-server
     HostName {config['server_ip']}
     User {config['username']}
@@ -69,8 +69,8 @@ Host mcp-server
 def create_batch_script(config):
     """创建Windows批处理脚本"""
     batch_content = f"""@echo off
-REM MCP反馈收集器SSH连接脚本
-echo 🚀 启动MCP反馈收集器开发环境
+REM MCP反馈通道SSH连接脚本
+echo 🚀 启动MCP反馈通道开发环境
 echo 📡 建立SSH隧道到 {config['server_ip']}...
 echo.
 
@@ -83,8 +83,8 @@ pause
 
 def create_powershell_script(config):
     """创建PowerShell脚本"""
-    ps_content = f"""# MCP反馈收集器SSH连接脚本
-Write-Host "🚀 启动MCP反馈收集器开发环境" -ForegroundColor Green
+    ps_content = f"""# MCP反馈通道SSH连接脚本
+Write-Host "🚀 启动MCP反馈通道开发环境" -ForegroundColor Green
 Write-Host "📡 建立SSH隧道到 {config['server_ip']}..." -ForegroundColor Yellow
 Write-Host ""
 
@@ -154,7 +154,7 @@ def test_connection(config):
 
 def main():
     """主函数"""
-    print("🔧 MCP反馈收集器SSH配置助手")
+    print("🔧 MCP反馈通道SSH配置助手")
     print("=" * 40)
     
     # 获取用户输入
@@ -194,7 +194,7 @@ def main():
     print(f"1. 在Windows命令行或PowerShell中执行:")
     print(f"   {commands['port_forward']}")
     print(f"2. 连接成功后，在SSH会话中启动MCP服务:")
-    print(f"   cd /path/to/mcp-feedback-collector")
+    print(f"   cd /path/to/mcp-feedback-pipe")
     print(f"   source .venv/bin/activate")
     print(f"   python scripts/start_server.py")
     print(f"3. 在Windows浏览器中访问:")

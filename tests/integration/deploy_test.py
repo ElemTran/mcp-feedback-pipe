@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MCP反馈收集器部署测试脚本
+MCP反馈通道部署测试脚本
 """
 import os
 import sys
@@ -16,9 +16,9 @@ def test_imports():
     """测试模块导入"""
     print("📦 测试模块导入...")
     try:
-        import mcp_feedback_collector
-        from mcp_feedback_collector import server
-        from mcp_feedback_collector.app import FeedbackApp
+        import mcp_feedback_pipe
+        from mcp_feedback_pipe import server
+        from mcp_feedback_pipe.app import FeedbackApp
         print("✅ 模块导入成功")
         return True
     except ImportError as e:
@@ -29,8 +29,8 @@ def test_flask_app():
     """测试Flask应用"""
     print("🌐 测试Flask应用...")
     try:
-        from mcp_feedback_collector.app import FeedbackApp
-        from mcp_feedback_collector.feedback_handler import FeedbackHandler
+        from mcp_feedback_pipe.app import FeedbackApp
+        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
         
         # 创建反馈处理器和应用实例
         handler = FeedbackHandler()
@@ -83,7 +83,7 @@ def check_port():
 
 def main():
     """主测试函数"""
-    print("🚀 MCP反馈收集器部署测试")
+    print("🚀 MCP反馈通道部署测试")
     print("=" * 50)
     
     # 测试导入

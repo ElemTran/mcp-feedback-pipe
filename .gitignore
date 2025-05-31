@@ -182,4 +182,7 @@ ssh_scripts/
 # PyPI发布相关
 *.egg-info/
 .publish_config.json
-build/ 
+build/
+
+# 忽略开发者指南目录
+docs/dev_guide/ 

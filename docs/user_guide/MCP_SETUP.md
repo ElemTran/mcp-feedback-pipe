@@ -1,4 +1,4 @@
-# 🔧 MCP反馈收集器配置指南
+# 🔧 MCP反馈通道配置指南
 
 ## 📋 配置文件路径
 
@@ -31,11 +31,11 @@
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "uvx",
       "args": [
-        "--from", "/path/to/mcp-feedback-collector",
-        "mcp-feedback-collector"
+        "--from", "/path/to/mcp-feedback-pipe",
+        "mcp-feedback-pipe"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8",
@@ -51,11 +51,11 @@
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
+    "mcp-feedback-pipe": {
       "command": "uvx",
       "args": [
-        "--from", "/path/to/mcp-feedback-collector",
-        "mcp-feedback-collector"
+        "--from", "/path/to/mcp-feedback-pipe",
+        "mcp-feedback-pipe"
       ],
       "env": {
         "PYTHONIOENCODING": "utf-8",
@@ -76,13 +76,13 @@
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
-      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+    "mcp-feedback-pipe": {
+      "command": "/path/to/mcp-feedback-pipe/.venv/bin/python",
       "args": [
-        "/path/to/mcp-feedback-collector/src/mcp_feedback_collector/server.py"
+        "/path/to/mcp-feedback-pipe/src/mcp_feedback_pipe/server.py"
       ],
       "env": {
-        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONPATH": "/path/to/mcp-feedback-pipe/src",
         "PYTHONIOENCODING": "utf-8",
         "MCP_DIALOG_TIMEOUT": "600",
         "MCP_USE_WEB": "true"
@@ -96,13 +96,13 @@
 ```json
 {
   "mcpServers": {
-    "mcp-feedback-collector": {
-      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+    "mcp-feedback-pipe": {
+      "command": "/path/to/mcp-feedback-pipe/.venv/bin/python",
       "args": [
-        "/path/to/mcp-feedback-collector/src/mcp_feedback_collector/server.py"
+        "/path/to/mcp-feedback-pipe/src/mcp_feedback_pipe/server.py"
       ],
       "env": {
-        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONPATH": "/path/to/mcp-feedback-pipe/src",
         "PYTHONIOENCODING": "utf-8",
         "MCP_DIALOG_TIMEOUT": "600",
         "MCP_USE_WEB": "true"
@@ -143,14 +143,14 @@ pip install uv
 
 #### 2. 获取项目
 ```bash
-git clone https://github.com/your-username/mcp-feedback-collector.git
+git clone https://github.com/your-username/mcp-feedback-pipe.git
 ```
 
 #### 3. 更新配置路径
-将配置文件中的 `/path/to/mcp-feedback-collector` 替换为您的实际项目路径：
+将配置文件中的 `/path/to/mcp-feedback-pipe` 替换为您的实际项目路径：
 ```bash
 # 例如：
-/home/username/mcp-feedback-collector
+/home/username/mcp-feedback-pipe
 ```
 
 #### 4. 复制配置文件
@@ -169,7 +169,7 @@ cp docs/claude_desktop_config_uvx.json ~/.config/claude-desktop/claude_desktop_c
 
 #### 1. 创建虚拟环境
 ```bash
-cd /path/to/mcp-feedback-collector
+cd /path/to/mcp-feedback-pipe
 python -m venv .venv
 source .venv/bin/activate  # Linux/Mac
 # 或 .venv\Scripts\activate  # Windows
@@ -235,16 +235,16 @@ uvx --version
 
 ### 1. uvx测试（推荐）
 ```bash
-cd /path/to/mcp-feedback-collector
-uvx --from . mcp-feedback-collector
+cd /path/to/mcp-feedback-pipe
+uvx --from . mcp-feedback-pipe
 # 应该启动MCP服务器
 ```
 
 ### 2. 传统测试
 ```bash
-cd /path/to/mcp-feedback-collector
+cd /path/to/mcp-feedback-pipe
 source .venv/bin/activate
-python src/mcp_feedback_collector/server.py
+python src/mcp_feedback_pipe/server.py
 ```
 
 ### 3. 在编辑器中测试
@@ -284,14 +284,14 @@ pip install uv
 将配置中的:
 ```json
 "command": "/path/to/.venv/bin/python",
-"args": ["/path/to/src/mcp_feedback_collector/server.py"],
+"args": ["/path/to/src/mcp_feedback_pipe/server.py"],
 "env": {"PYTHONPATH": "/path/to/src", ...}
 ```
 
 替换为:
 ```json
 "command": "uvx",
-"args": ["--from", "/path/to/mcp-feedback-collector", "mcp-feedback-collector"],
+"args": ["--from", "/path/to/mcp-feedback-pipe", "mcp-feedback-pipe"],
 "env": {...}  // 移除PYTHONPATH
 ```
 

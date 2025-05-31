@@ -1,5 +1,5 @@
 """
-MCP反馈收集器 v3.0 - Web版本
+MCP反馈通道 v3.0 - Web版本
 支持SSH环境的现代化反馈收集工具
 
 主要功能：
@@ -10,7 +10,7 @@ MCP反馈收集器 v3.0 - Web版本
 
 __version__ = "3.0.0"
 __author__ = "MCP Feedback Collector Team"
-__description__ = "现代化MCP反馈收集器 - Web版本，完美支持SSH环境"
+__description__ = "现代化MCP反馈通道 - Web版本，完美支持SSH环境"
 
 # 导入主要功能
 from .server import mcp, collect_feedback, pick_image, get_image_info_tool
