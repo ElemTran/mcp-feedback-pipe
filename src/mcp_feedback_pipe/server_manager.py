@@ -57,7 +57,13 @@ class ServerManager:
     
     def _wait_for_server_ready(self, max_attempts: int = 10) -> bool:
         """等待服务器就绪"""
-        import requests
+        try:
+            import requests
+        except ImportError:
+            print("⚠️  requests模块不可用，跳过服务器就绪检查")
+            time.sleep(2)  # 简单等待
+            return True
+            
         for attempt in range(max_attempts):
             try:
                 response = requests.get(f"http://127.0.0.1:{self.current_port}/ping", timeout=1)
@@ -90,17 +96,8 @@ class ServerManager:
     def stop_server(self) -> None:
         """停止服务器"""
         try:
-            # 尝试优雅关闭服务器
-            if self.current_port:
-                import requests
-                try:
-                    requests.post(f"http://127.0.0.1:{self.current_port}/close", timeout=2)
-                except requests.exceptions.RequestException:
-                    pass  # 忽略关闭请求失败
-            
-            # 等待服务器线程结束
-            if self.server_thread and self.server_thread.is_alive():
-                self.server_thread.join(timeout=3)
+            # 不再发送关闭请求，让Flask服务器自然结束
+            # 因为服务器线程是daemon线程，会在主程序结束时自动清理
             
             # 清理资源
             self.feedback_handler.clear_queue()

@@ -7,12 +7,11 @@ import sys
 import os
 from typing import List
 
-# 添加src目录到路径以支持直接执行
-if __name__ == "__main__":
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    src_dir = os.path.dirname(current_dir)
-    if src_dir not in sys.path:
-        sys.path.insert(0, src_dir)
+# 添加src目录到路径以支持直接执行和MCP调用
+current_dir = os.path.dirname(os.path.abspath(__file__))
+src_dir = os.path.dirname(current_dir)
+if src_dir not in sys.path:
+    sys.path.insert(0, src_dir)
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.types import Image as MCPImage
@@ -20,10 +19,12 @@ from mcp.server.fastmcp.utilities.types import Image as MCPImage
 # 导入修复：支持相对导入和绝对导入
 try:
     from .server_manager import ServerManager
+    from .server_pool import get_managed_server, release_managed_server
     from .utils import get_image_info
 except ImportError:
     # 如果相对导入失败，尝试绝对导入
     from mcp_feedback_pipe.server_manager import ServerManager
+    from mcp_feedback_pipe.server_pool import get_managed_server, release_managed_server
     from mcp_feedback_pipe.utils import get_image_info
 
 
@@ -32,10 +33,6 @@ mcp = FastMCP(
     "MCP反馈通道 v3.0",
     dependencies=["flask", "pillow"]
 )
-
-# 全局服务器管理器
-server_manager = ServerManager()
-
 
 @mcp.tool()
 def collect_feedback(work_summary: str = "", timeout_seconds: int = 300, suggest: List[str] = None) -> List:
@@ -53,6 +50,10 @@ def collect_feedback(work_summary: str = "", timeout_seconds: int = 300, suggest
     Returns:
         包含用户反馈内容的列表，可能包含文本和图片
     """
+    # 使用服务器池获取托管的服务器实例
+    session_id = f"feedback_{id(work_summary)}_{timeout_seconds}"
+    server_manager = get_managed_server(session_id)
+    
     try:
         # 将建议列表转换为JSON字符串
         suggest_json = ""
@@ -73,16 +74,20 @@ def collect_feedback(work_summary: str = "", timeout_seconds: int = 300, suggest
         if result is None:
             raise Exception(f"操作超时（{timeout_seconds}秒），请重试")
         
-        # 转换为MCP格式并返回
-        return server_manager.feedback_handler.process_feedback_to_mcp(result)
+        # 转换为MCP格式
+        mcp_result = server_manager.feedback_handler.process_feedback_to_mcp(result)
+        
+        # 标记服务器可以被清理（但不立即清理）
+        release_managed_server(session_id, immediate=False)
+        
+        return mcp_result
         
     except ImportError as e:
+        release_managed_server(session_id, immediate=True)
         raise Exception(f"依赖缺失: {str(e)}")
     except Exception as e:
+        release_managed_server(session_id, immediate=True)
         raise Exception(f"启动反馈通道失败: {str(e)}")
-    finally:
-        # 清理资源
-        server_manager.stop_server()
 
 
 @mcp.tool()
@@ -96,6 +101,10 @@ def pick_image() -> MCPImage:
     Returns:
         选择的图片数据
     """
+    # 使用服务器池获取托管的服务器实例
+    session_id = f"image_picker_{id('pick_image')}"
+    server_manager = get_managed_server(session_id)
+    
     try:
         # 启动图片选择界面
         port = server_manager.start_server("请选择一张图片", 300)
@@ -110,13 +119,16 @@ def pick_image() -> MCPImage:
             
         # 返回第一张图片
         first_image = result['images'][0]
-        return MCPImage(data=first_image['data'], format='png')
+        mcp_image = MCPImage(data=first_image['data'], format='png')
+        
+        # 标记服务器可以被清理（但不立即清理）
+        release_managed_server(session_id, immediate=False)
+        
+        return mcp_image
         
     except Exception as e:
+        release_managed_server(session_id, immediate=True)
         raise Exception(f"图片选择失败: {str(e)}")
-    finally:
-        # 清理资源
-        server_manager.stop_server()
 
 
 @mcp.tool()

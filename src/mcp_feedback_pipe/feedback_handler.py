@@ -15,9 +15,11 @@ from mcp.types import TextContent
 class FeedbackHandler:
     """反馈数据处理器"""
     
-    def __init__(self):
-        self.result_queue = queue.Queue()
+    def __init__(self, max_queue_size: int = 100):
+        # 添加队列大小限制防止内存泄漏
+        self.result_queue = queue.Queue(maxsize=max_queue_size)
         self._lock = threading.Lock()
+        self.max_queue_size = max_queue_size
     
     def put_result(self, result: Dict) -> None:
         """将结果放入队列"""

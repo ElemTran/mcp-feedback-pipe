@@ -8,20 +8,55 @@
     <meta name="keywords" content="MCP,反馈收集,AI助手,Web界面,SSH兼容">
     <meta name="author" content="MCP Feedback Collector Team">
     
+    <!-- 安全策略 -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob:; connect-src 'self';">
+    
     <!-- Favicon using emoji -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
     
-    <!-- 外部依赖 -->
-    <!-- Marked.js for Markdown parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
-    
-    <!-- Mermaid.js for diagram rendering -->
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
-    
-    <!-- Prism.js for code highlighting -->
-    <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <!-- 外部依赖 - 最新版本 + 多CDN备用 -->
+    <!-- Marked.js for Markdown parsing - v15.0.12 -->
+    <script>
+        // CDN备用加载机制
+        function loadScript(urls, onLoad, onError) {
+            let index = 0;
+            function tryNext() {
+                if (index >= urls.length) {
+                    if (onError) onError();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = urls[index];
+                script.crossOrigin = 'anonymous';
+                script.referrerPolicy = 'no-referrer';
+                script.onload = onLoad;
+                script.onerror = () => {
+                    index++;
+                    tryNext();
+                };
+                document.head.appendChild(script);
+            }
+            tryNext();
+        }
+        
+        function loadCSS(urls) {
+            let index = 0;
+            function tryNext() {
+                if (index >= urls.length) return;
+                const link = document.createElement('link');
+                link.rel = 'stylesheet';
+                link.href = urls[index];
+                link.crossOrigin = 'anonymous';
+                link.referrerPolicy = 'no-referrer';
+                link.onerror = () => {
+                    index++;
+                    tryNext();
+                };
+                document.head.appendChild(link);
+            }
+            tryNext();
+        }
+    </script>
     
     <!-- 加载样式 -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
@@ -38,7 +73,7 @@
             <div class="section work-report-section">
                 <div class="section-header">
                     📋 AI工作完成汇报
-                    <button type="button" class="btn btn-small" id="toggleReportBtn" onclick="toggleReportSize()" aria-label="调整汇报区域大小">
+                    <button type="button" class="btn btn-small" id="toggleReportBtn" onclick="window.MCPFeedback.toggleReportSize()" aria-label="调整汇报区域大小">
                         📏 调整大小
                     </button>
                 </div>
@@ -51,11 +86,13 @@
             
             <!-- 反馈表单 - 占较小空间 -->
             <form id="feedbackForm">
+                <!-- CSRF保护令牌 -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token }}" id="csrfToken">
                 <!-- 统一反馈区域 -->
                 <div class="section feedback-section">
                     <div class="section-header">
                         💬 您的反馈（文字+图片，可选）
-                        <button type="button" class="btn btn-small" id="toggleFeedbackBtn" onclick="toggleFeedbackSize()" aria-label="展开或收起反馈区域">
+                        <button type="button" class="btn btn-small" id="toggleFeedbackBtn" onclick="window.MCPFeedback.toggleFeedbackSize()" aria-label="展开或收起反馈区域">
                             📏 展开/收起
                         </button>
                     </div>
@@ -105,6 +142,54 @@
         </div>
     </div>
 
+    <!-- 动态加载外部依赖 -->
+    <script>
+        // 加载Prism.js CSS
+        loadCSS([
+            'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/themes/prism-tomorrow.min.css',
+            'https://unpkg.com/prismjs@1.30.0/themes/prism-tomorrow.min.css'
+        ]);
+        
+        // 加载Marked.js
+        loadScript([
+            'https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js',
+            'https://unpkg.com/marked@15.0.12/marked.min.js'
+        ], function() {
+            console.log('✅ Marked.js 加载成功');
+        }, function() {
+            console.warn('❌ Marked.js 加载失败，Markdown渲染将不可用');
+        });
+        
+        // 加载Mermaid.js
+        loadScript([
+            'https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js',
+            'https://unpkg.com/mermaid@11.6.0/dist/mermaid.min.js'
+        ], function() {
+            console.log('✅ Mermaid.js 加载成功');
+        }, function() {
+            console.warn('❌ Mermaid.js 加载失败，图表渲染将不可用');
+        });
+        
+        // 加载Prism.js Core
+        loadScript([
+            'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-core.min.js',
+            'https://unpkg.com/prismjs@1.30.0/components/prism-core.min.js'
+        ], function() {
+            console.log('✅ Prism.js Core 加载成功');
+            // 加载Prism.js Autoloader
+            loadScript([
+                'https://cdn.jsdelivr.net/npm/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js',
+                'https://unpkg.com/prismjs@1.30.0/plugins/autoloader/prism-autoloader.min.js'
+            ], function() {
+                console.log('✅ Prism.js Autoloader 加载成功');
+            }, function() {
+                console.warn('❌ Prism.js Autoloader 加载失败，代码高亮将不可用');
+            });
+        }, function() {
+            console.warn('❌ Prism.js Core 加载失败，代码高亮将不可用');
+        });
+    </script>
+    
     <script type="module" src="{{ url_for('static', filename='js/feedback-main.js') }}"></script>
 </body>
 </html> 

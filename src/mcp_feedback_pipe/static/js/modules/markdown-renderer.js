@@ -6,6 +6,87 @@
 import { escapeHtml, showAlert } from './utils.js';
 
 /**
+ * 简化的HTML清理函数，防止XSS攻击
+ * @param {string} html - 需要清理的HTML字符串
+ * @returns {string} 清理后的安全HTML
+ */
+function sanitizeHTML(html) {
+    // 允许的标签和属性
+    const allowedTags = [
+        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'p', 'br', 'hr', 'div', 'span',
+        'strong', 'b', 'em', 'i', 'u', 'del', 's',
+        'ul', 'ol', 'li',
+        'blockquote', 'pre', 'code',
+        'table', 'thead', 'tbody', 'tr', 'th', 'td',
+        'a', 'img'
+    ];
+    
+    const allowedAttributes = {
+        'a': ['href', 'title', 'target'],
+        'img': ['src', 'alt', 'title', 'width', 'height'],
+        'pre': ['class'],
+        'code': ['class'],
+        'div': ['class'],
+        'span': ['class']
+    };
+    
+    // 创建临时DOM元素进行清理
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    
+    // 递归清理函数
+    function cleanElement(element) {
+        const tagName = element.tagName.toLowerCase();
+        
+        // 检查标签是否允许
+        if (!allowedTags.includes(tagName)) {
+            // 不允许的标签，保留文本内容
+            const textNode = document.createTextNode(element.textContent || '');
+            element.parentNode.replaceChild(textNode, element);
+            return;
+        }
+        
+        // 清理属性
+        const allowedAttrs = allowedAttributes[tagName] || [];
+        const attributes = Array.from(element.attributes);
+        
+        attributes.forEach(attr => {
+            if (!allowedAttrs.includes(attr.name)) {
+                element.removeAttribute(attr.name);
+            } else {
+                // 特殊处理href属性，防止javascript:协议
+                if (attr.name === 'href') {
+                    const href = attr.value.toLowerCase().trim();
+                    if (href.startsWith('javascript:') || href.startsWith('data:') || href.startsWith('vbscript:')) {
+                        element.removeAttribute(attr.name);
+                    }
+                }
+                // 特殊处理src属性
+                if (attr.name === 'src') {
+                    const src = attr.value.toLowerCase().trim();
+                    if (src.startsWith('javascript:') || src.startsWith('vbscript:')) {
+                        element.removeAttribute(attr.name);
+                    }
+                }
+            }
+        });
+        
+        // 递归处理子元素
+        Array.from(element.children).forEach(child => {
+            cleanElement(child);
+        });
+    }
+    
+    // 清理所有子元素
+    Array.from(tempDiv.children).forEach(child => {
+        cleanElement(child);
+    });
+    
+    return tempDiv.innerHTML;
+}
+
+/**
  * 初始化Markdown渲染
  */
 export function initializeMarkdownRendering() {
@@ -68,7 +149,10 @@ export function renderMarkdown(content, container) {
         
         // 渲染Markdown
         const html = marked.parse(content);
-        container.innerHTML = html;
+        
+        // XSS防护：清理HTML内容
+        const cleanHtml = sanitizeHTML(html);
+        container.innerHTML = cleanHtml;
         
         // 处理Mermaid图表
         processMermaidDiagrams(container);

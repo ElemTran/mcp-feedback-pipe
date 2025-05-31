@@ -183,6 +183,3 @@ ssh_scripts/
 *.egg-info/
 .publish_config.json
 build/
-
-# 忽略开发者指南目录
-docs/dev_guide/ 

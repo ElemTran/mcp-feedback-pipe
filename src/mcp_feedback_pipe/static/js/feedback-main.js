@@ -10,12 +10,14 @@ import { initializeImageHandlers } from './modules/image-handler.js';
 import { initializeSuggestOptions, submitSuggestion } from './modules/suggestion-handler.js';
 import { initializeFormHandlers, toggleReportSize, toggleFeedbackSize, toggleImageSection } from './modules/form-handler.js';
 
-// 将需要全局访问的函数暴露到window对象
-window.toggleReportSize = toggleReportSize;
-window.toggleFeedbackSize = toggleFeedbackSize;
-window.toggleImageSection = toggleImageSection;
-window.submitSuggestion = submitSuggestion;
-window.updateWorkSummary = updateWorkSummary;
+// 使用命名空间模式避免全局变量污染
+window.MCPFeedback = {
+    toggleReportSize,
+    toggleFeedbackSize,
+    toggleImageSection,
+    submitSuggestion,
+    updateWorkSummary
+};
 
 // 页面加载完成后初始化所有模块
 document.addEventListener('DOMContentLoaded', function() {

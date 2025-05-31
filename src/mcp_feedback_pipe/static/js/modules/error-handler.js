@@ -27,11 +27,17 @@ export function initializeGlobalErrorHandling() {
  * 防抖的服务器连接检查
  */
 const debouncedPing = debounce(async () => {
-    try {
-        const response = await fetch('/ping', {
-            method: 'GET',
-            timeout: 5000
-        });
+            try {
+            // 使用AbortController实现超时控制
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch('/ping', {
+                method: 'GET',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
         if (!response.ok) {
             throw new Error('服务器响应异常');
         }

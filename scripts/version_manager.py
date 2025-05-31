@@ -37,6 +37,7 @@ class VersionManager:
             "pyproject.toml": self._update_pyproject_toml,
             "src/mcp_feedback_pipe/version.py": self._update_version_py,
             "src/mcp_feedback_pipe/__init__.py": self._update_init_py,
+            "tests/__init__.py": self._update_tests_init_py,
         }
     
     def parse_version(self, version_str: str) -> Tuple[int, int, int]:
@@ -160,6 +161,33 @@ class VersionManager:
                 return True  # 不阻止流程
         except Exception as e:
             print(f"❌ 检查 __init__.py 失败: {e}")
+            return False
+    
+    def _update_tests_init_py(self, new_version: str) -> bool:
+        """更新 tests/__init__.py 中的版本号"""
+        file_path = self.project_root / "tests/__init__.py"
+        if not file_path.exists():
+            print(f"❌ 文件不存在: {file_path}")
+            return False
+        
+        try:
+            content = file_path.read_text(encoding='utf-8')
+            # 更新 __version__
+            new_content = re.sub(
+                r'__version__\s*=\s*"[^"]*"',
+                f'__version__ = "{new_version}"',
+                content
+            )
+            
+            if new_content != content:
+                file_path.write_text(new_content, encoding='utf-8')
+                print(f"✅ 已更新 tests/__init__.py: {new_version}")
+                return True
+            else:
+                print(f"⚠️  tests/__init__.py 中未找到版本号模式")
+                return False
+        except Exception as e:
+            print(f"❌ 更新 tests/__init__.py 失败: {e}")
             return False
     
     def update_all_versions(self, new_version: str) -> bool:
