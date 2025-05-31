@@ -4,29 +4,183 @@ let selectedImages = [];
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
+    initializeMarkdownRendering();
+    initializeMermaid();
+    initializeAutoResize();
+    initializeSuggestOptions();
 });
 
 function initializeEventListeners() {
-    const uploadArea = document.getElementById('uploadArea');
+    const uploadBtn = document.getElementById('uploadBtn');
     const fileInput = document.getElementById('fileInput');
-    const pasteArea = document.getElementById('pasteArea');
+    const textFeedback = document.getElementById('textFeedback');
     const form = document.getElementById('feedbackForm');
     
-    // 文件选择
-    uploadArea.addEventListener('click', () => fileInput.click());
+    // 文件选择按钮
+    uploadBtn.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', handleFileSelect);
     
-    // 拖拽上传
-    uploadArea.addEventListener('dragover', handleDragOver);
-    uploadArea.addEventListener('drop', handleDrop);
-    uploadArea.addEventListener('dragleave', handleDragLeave);
+    // 文本框拖拽上传
+    textFeedback.addEventListener('dragover', handleDragOver);
+    textFeedback.addEventListener('drop', handleDrop);
+    textFeedback.addEventListener('dragleave', handleDragLeave);
     
-    // 粘贴图片
-    document.addEventListener('paste', handlePaste);
-    pasteArea.addEventListener('click', () => pasteArea.focus());
+    // 文本框粘贴图片
+    textFeedback.addEventListener('paste', handlePaste);
     
     // 表单提交
     form.addEventListener('submit', handleSubmit);
+}
+
+// 初始化Markdown渲染
+function initializeMarkdownRendering() {
+    const workSummary = document.getElementById('workSummary');
+    const content = workSummary.textContent || workSummary.innerText;
+    
+    if (content && content.trim() !== "等待AI汇报工作内容...") {
+        renderMarkdown(content, workSummary);
+    }
+}
+
+// 初始化Mermaid
+function initializeMermaid() {
+    if (typeof mermaid !== 'undefined') {
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            securityLevel: 'loose',
+            fontFamily: 'Microsoft YaHei, Arial, sans-serif'
+        });
+    }
+}
+
+// 初始化自动伸缩文本框
+function initializeAutoResize() {
+    const textarea = document.getElementById('textFeedback');
+    if (textarea) {
+        textarea.classList.add('auto-resize');
+        textarea.addEventListener('input', autoResizeTextarea);
+        // 初始调整
+        autoResizeTextarea.call(textarea);
+    }
+}
+
+// 渲染Markdown内容
+function renderMarkdown(content, container) {
+    try {
+        // 配置marked选项
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (typeof Prism !== 'undefined' && lang && Prism.languages[lang]) {
+                    return Prism.highlight(code, Prism.languages[lang], lang);
+                }
+                return code;
+            },
+            breaks: true,
+            gfm: true
+        });
+        
+        // 渲染Markdown
+        const html = marked.parse(content);
+        container.innerHTML = html;
+        
+        // 处理Mermaid图表
+        processMermaidDiagrams(container);
+        
+        // 高亮代码块
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAllUnder(container);
+        }
+        
+    } catch (error) {
+        console.error('Markdown渲染错误:', error);
+        container.innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+    }
+}
+
+// 处理Mermaid图表
+function processMermaidDiagrams(container) {
+    const codeBlocks = container.querySelectorAll('pre code');
+    codeBlocks.forEach((block, index) => {
+        const text = block.textContent;
+        if (text.trim().startsWith('graph') || 
+            text.trim().startsWith('flowchart') ||
+            text.trim().startsWith('sequenceDiagram') ||
+            text.trim().startsWith('classDiagram') ||
+            text.trim().startsWith('gitgraph') ||
+            text.trim().startsWith('pie') ||
+            text.trim().startsWith('journey') ||
+            text.trim().startsWith('gantt')) {
+            
+            const mermaidDiv = document.createElement('div');
+            mermaidDiv.className = 'mermaid';
+            mermaidDiv.textContent = text;
+            mermaidDiv.id = `mermaid-${Date.now()}-${index}`;
+            
+            block.parentElement.replaceWith(mermaidDiv);
+            
+            // 渲染Mermaid图表
+            if (typeof mermaid !== 'undefined') {
+                mermaid.init(undefined, mermaidDiv);
+            }
+        }
+    });
+}
+
+// HTML转义
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// 自动调整文本框高度
+function autoResizeTextarea() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+}
+
+// 切换汇报区域大小
+function toggleReportSize() {
+    const reportSection = document.querySelector('.work-report-section');
+    const feedbackForm = document.getElementById('feedbackForm');
+    const toggleBtn = document.getElementById('toggleReportBtn');
+    
+    if (reportSection.classList.contains('maximized')) {
+        // 恢复默认大小
+        reportSection.classList.remove('maximized');
+        feedbackForm.style.display = 'block';
+        toggleBtn.innerHTML = '📏 调整大小';
+    } else {
+        // 最大化汇报区域
+        reportSection.classList.add('maximized');
+        feedbackForm.style.display = 'none';
+        toggleBtn.innerHTML = '📏 恢复大小';
+    }
+}
+
+// 切换反馈输入区域
+function toggleFeedbackSize() {
+    const feedbackContent = document.getElementById('feedbackContent');
+    const textarea = document.getElementById('textFeedback');
+    
+    if (feedbackContent.style.display === 'none') {
+        feedbackContent.style.display = 'block';
+        textarea.focus();
+    } else {
+        feedbackContent.style.display = 'none';
+    }
+}
+
+// 切换图片上传区域
+function toggleImageSection() {
+    const imageContent = document.getElementById('imageContent');
+    
+    if (imageContent.style.display === 'none') {
+        imageContent.style.display = 'block';
+    } else {
+        imageContent.style.display = 'none';
+    }
 }
 
 function handleFileSelect(e) {
@@ -40,33 +194,47 @@ function handleFileSelect(e) {
 
 function handleDragOver(e) {
     e.preventDefault();
-    e.currentTarget.classList.add('dragover');
+    e.currentTarget.style.backgroundColor = '#f0f4ff';
+    e.currentTarget.style.borderColor = '#667eea';
 }
 
 function handleDragLeave(e) {
-    e.currentTarget.classList.remove('dragover');
+    e.currentTarget.style.backgroundColor = '';
+    e.currentTarget.style.borderColor = '';
 }
 
 function handleDrop(e) {
     e.preventDefault();
-    e.currentTarget.classList.remove('dragover');
+    e.currentTarget.style.backgroundColor = '';
+    e.currentTarget.style.borderColor = '';
     
     const files = Array.from(e.dataTransfer.files);
     files.forEach(file => {
         if (file.type.startsWith('image/')) {
-            addImage(file);
+            addImage(file, '拖拽');
         }
     });
 }
 
 function handlePaste(e) {
     const items = Array.from(e.clipboardData.items);
+    let hasImage = false;
+    
     items.forEach(item => {
         if (item.type.startsWith('image/')) {
+            e.preventDefault(); // 阻止默认粘贴行为
             const file = item.getAsFile();
-            addImage(file, '剪贴板');
+            if (file) {
+                addImage(file, '粘贴');
+                hasImage = true;
+            }
         }
     });
+    
+    if (hasImage) {
+        // 显示提示信息
+        showAlert('图片已添加到反馈中', 'success');
+    }
 }
 
 function addImage(file, source = '文件') {
@@ -75,7 +243,7 @@ function addImage(file, source = '文件') {
         const imageData = {
             data: e.target.result,
             source: source,
-            name: file.name || '剪贴板图片',
+            name: file.name || '粘贴图片',
             size: file.size
         };
         
@@ -182,4 +350,85 @@ setInterval(async () => {
     } catch (error) {
         showAlert('与服务器连接中断', 'warning');
     }
-}, 30000); 
+}, 30000);
+
+// 初始化建议选项
+function initializeSuggestOptions() {
+    const suggestDataElement = document.getElementById('suggestData');
+    if (!suggestDataElement) return;
+    
+    const suggestText = suggestDataElement.textContent.trim();
+    if (!suggestText) return;
+    
+    try {
+        const suggestions = JSON.parse(suggestText);
+        if (Array.isArray(suggestions) && suggestions.length > 0) {
+            renderSuggestOptions(suggestions);
+        }
+    } catch (error) {
+        console.error('解析建议选项失败:', error);
+    }
+}
+
+// 渲染建议选项
+function renderSuggestOptions(suggestions) {
+    const suggestOptions = document.getElementById('suggestOptions');
+    const suggestList = document.getElementById('suggestList');
+    
+    if (!suggestOptions || !suggestList) return;
+    
+    suggestList.innerHTML = '';
+    
+    suggestions.forEach((suggestion, index) => {
+        const item = document.createElement('div');
+        item.className = 'suggest-item';
+        item.innerHTML = `
+            <div class="suggest-text" onclick="submitSuggestion('${escapeHtml(suggestion)}')">${escapeHtml(suggestion)}</div>
+            <div class="suggest-actions">
+                <button type="button" class="suggest-btn suggest-btn-copy" onclick="copySuggestion('${escapeHtml(suggestion)}')" title="复制到输入框">
+                    📋
+                </button>
+                <button type="button" class="suggest-btn suggest-btn-submit" onclick="submitSuggestion('${escapeHtml(suggestion)}')" title="直接提交">
+                    ✅
+                </button>
+            </div>
+        `;
+        suggestList.appendChild(item);
+    });
+    
+    suggestOptions.style.display = 'block';
+}
+
+// 复制建议到输入框
+function copySuggestion(suggestion) {
+    const textarea = document.getElementById('textFeedback');
+    if (textarea) {
+        textarea.value = suggestion;
+        textarea.focus();
+        autoResizeTextarea.call(textarea);
+        showAlert('建议已复制到输入框', 'success');
+    }
+}
+
+// 直接提交建议
+async function submitSuggestion(suggestion) {
+    const textarea = document.getElementById('textFeedback');
+    if (textarea) {
+        textarea.value = suggestion;
+    }
+    
+    // 触发表单提交
+    const form = document.getElementById('feedbackForm');
+    if (form) {
+        const event = new Event('submit', { bubbles: true, cancelable: true });
+        form.dispatchEvent(event);
+    }
+}
+
+// 监听工作汇报内容更新
+function updateWorkSummary(content) {
+    const workSummary = document.getElementById('workSummary');
+    if (content && content.trim()) {
+        renderMarkdown(content, workSummary);
+    }
+} 

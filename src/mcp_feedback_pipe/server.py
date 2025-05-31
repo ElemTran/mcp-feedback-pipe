@@ -38,7 +38,7 @@ server_manager = ServerManager()
 
 
 @mcp.tool()
-def collect_feedback(work_summary: str = "", timeout_seconds: int = 300) -> List:
+def collect_feedback(work_summary: str = "", timeout_seconds: int = 300, suggest: List[str] = None) -> List:
     """
     收集用户反馈的交互式工具（Web版本）
     
@@ -48,13 +48,20 @@ def collect_feedback(work_summary: str = "", timeout_seconds: int = 300) -> List
     Args:
         work_summary: AI完成的工作内容汇报
         timeout_seconds: 对话框超时时间（秒），默认300秒（5分钟）
+        suggest: 建议选项列表，格式如：["选项1", "选项2", "选项3"]
         
     Returns:
         包含用户反馈内容的列表，可能包含文本和图片
     """
     try:
+        # 将建议列表转换为JSON字符串
+        suggest_json = ""
+        if suggest and isinstance(suggest, list):
+            import json
+            suggest_json = json.dumps(suggest, ensure_ascii=False)
+        
         # 启动Web服务器
-        port = server_manager.start_server(work_summary, timeout_seconds)
+        port = server_manager.start_server(work_summary, timeout_seconds, suggest_json)
         
         print(f"📱 反馈通道已启动: http://127.0.0.1:{port}")
         print(f"⏰ 等待用户反馈... (超时: {timeout_seconds}秒)")

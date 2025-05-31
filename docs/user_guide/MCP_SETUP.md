@@ -67,12 +67,65 @@
 
 > **🎯 注意**: 使用PyPI版本无需指定 `--from` 参数，uvx会自动从PyPI下载最新版本
 
-## 🔧 备选配置：本地开发版本
+## 🔧 开发版本配置：热部署方式（⭐ 开发者推荐）
+
+### 优势
+- ✅ **热部署**: 修改代码后立即生效，无需重新安装
+- ✅ **实时调试**: 直接运行源代码，便于调试
+- ✅ **开发友好**: 适合频繁修改和测试
+
+### 1. Cursor配置（开发版热部署）
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe-dev": {
+      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+      "args": [
+        "/path/to/mcp-feedback-collector/src/mcp_feedback_pipe/server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+### 2. Claude Desktop配置（开发版热部署）
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe-dev": {
+      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+      "args": [
+        "/path/to/mcp-feedback-collector/src/mcp_feedback_pipe/server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+> **🎯 重要**: 
+> - 使用`mcp-feedback-pipe-dev`作为服务器名称以区分开发版本
+> - 直接指向虚拟环境的Python解释器和源代码
+> - 设置`PYTHONPATH`确保模块导入正确
+> - 修改代码后重启编辑器即可生效
+
+## 🔧 备选配置：uvx打包方式（仅用于已发布版本）
 
 <details>
-<summary>点击展开本地开发配置（仅开发者使用）</summary>
+<summary>点击展开uvx打包配置（需要已发布的包）</summary>
 
-### 1. Cursor配置（本地开发）
+### 1. Cursor配置（uvx打包）
 ```json
 {
   "mcpServers": {
@@ -92,7 +145,7 @@
 }
 ```
 
-### 2. Claude Desktop配置（本地开发）
+### 2. Claude Desktop配置（uvx打包）
 ```json
 {
   "mcpServers": {
@@ -111,6 +164,8 @@
   }
 }
 ```
+
+> **⚠️ 注意**: 此方式需要项目已经打包，适用于稳定版本，不适合开发调试
 
 </details>
 
@@ -163,11 +218,13 @@
 
 ## 🎯 可用的MCP工具
 
-### 1. `collect_feedback`
+### 1. `collect_feedback` ✨**已优化**
 - **功能**: 收集用户反馈（文字+图片）
 - **参数**: 
   - `work_summary`: 工作汇报内容
   - `timeout_seconds`: 超时时间（默认300秒）
+  - `suggest`: 建议选项列表，格式如：`["选项1", "选项2", "选项3"]` ✅**已验证**
+- **新功能**: 支持预设建议选项，用户可快速选择或复制到输入框
 
 ### 2. `pick_image` 
 - **功能**: 快速图片选择
@@ -178,6 +235,33 @@
 - **功能**: 获取图片信息
 - **参数**: 
   - `image_path`: 图片文件路径
+
+## 💡 suggest参数使用示例
+
+### 基础用法
+```python
+# 简单建议选项
+collect_feedback(
+    work_summary="任务完成情况汇报",
+    suggest=["满意", "需要改进", "有问题"]
+)
+```
+
+### 详细建议选项
+```python
+# 代码审查场景
+collect_feedback(
+    work_summary="代码重构完成，请审查",
+    suggest=[
+        "代码质量优秀，可以合并",
+        "需要小幅修改后合并",
+        "建议重构部分代码", 
+        "需要补充测试用例"
+    ]
+)
+```
+
+> **📋 详细文档**: 查看 [suggest参数使用指南](SUGGEST_PARAMETER_GUIDE.md) 了解完整的技术实现和最佳实践
 
 ## 🛠️ 安装配置步骤
 
@@ -231,10 +315,86 @@ pip install uv
 uvx mcp-feedback-pipe --help
 ```
 
-### 🔧 本地开发版本（仅开发者）
+### 🔧 开发版本热部署（⭐ 开发者推荐）
+
+#### 1. 获取项目代码
+```bash
+git clone https://github.com/ElemTran/mcp-feedback-pipe.git
+cd mcp-feedback-pipe
+```
+
+#### 2. 创建虚拟环境
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+# 或 .venv\Scripts\activate  # Windows
+```
+
+#### 3. 安装依赖
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. 配置MCP（热部署方式）
+**Cursor配置** (`~/.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe-dev": {
+      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+      "args": [
+        "/path/to/mcp-feedback-collector/src/mcp_feedback_pipe/server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+**Claude Desktop配置** (`~/.config/claude-desktop/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe-dev": {
+      "command": "/path/to/mcp-feedback-collector/.venv/bin/python",
+      "args": [
+        "/path/to/mcp-feedback-collector/src/mcp_feedback_pipe/server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/path/to/mcp-feedback-collector/src",
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+#### 5. 更新配置路径
+将配置文件中的 `/path/to/mcp-feedback-collector` 替换为您的实际项目路径。
+
+#### 6. 测试热部署
+```bash
+# 测试MCP服务器
+source .venv/bin/activate
+python src/mcp_feedback_pipe/server.py
+```
+
+> **🎯 热部署优势**: 
+> - 修改前端代码后，重启编辑器即可看到效果
+> - 修改后端代码后，重启编辑器即可生效
+> - 无需重新安装或打包
+
+### 🔧 uvx打包方式（仅用于已发布版本）
 
 <details>
-<summary>点击展开本地开发安装步骤</summary>
+<summary>点击展开uvx打包安装步骤</summary>
 
 #### 1. 安装uvx
 ```bash
@@ -335,30 +495,42 @@ uvx --version
 
 ## 🚀 测试步骤
 
-### 1. uvx测试（推荐）
+### 1. 开发版本热部署测试（⭐ 推荐）
+```bash
+cd /path/to/mcp-feedback-collector
+source .venv/bin/activate
+python src/mcp_feedback_pipe/server.py
+# 应该启动MCP服务器，显示可用工具
+```
+
+### 2. uvx打包测试（仅用于已发布版本）
 ```bash
 cd /path/to/mcp-feedback-pipe
 uvx --from . mcp-feedback-pipe
 # 应该启动MCP服务器
 ```
 
-### 2. 传统测试
-```bash
-cd /path/to/mcp-feedback-pipe
-source .venv/bin/activate
-python src/mcp_feedback_pipe/server.py
-```
-
 ### 3. 在编辑器中测试
-- 重启编辑器
+- 重启编辑器（Cursor或Claude Desktop）
 - 检查MCP服务器状态（应显示绿色）
-- 尝试使用工具
+- 查看可用工具列表
+- 尝试使用`collect_feedback`工具
 
-### 4. Web界面测试
+### 4. 前端界面测试
 ```bash
+# 使用测试服务器
+python tests/frontend/test_server.py
+
+# 或使用部署脚本
 python scripts/mcp_deploy.py
 # 选择模式1（Web服务模式）
 ```
+
+### 5. 热部署验证
+1. 修改前端文件（如CSS或JS）
+2. 重启编辑器
+3. 调用MCP工具，查看修改是否生效
+4. 无需重新安装或打包
 
 ## 📱 SSH环境使用
 

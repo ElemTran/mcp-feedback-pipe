@@ -1,8 +1,32 @@
 # 🎯 MCP反馈通道 (MCP Feedback Pipe)
 
-**版本**: 3.0.0 | **架构**: Web版本 | **支持**: SSH远程环境
 
-一个基于Flask的现代化Web界面反馈收集工具，专为MCP (Model Context Protocol) 环境设计。从GUI架构完全重构为Web架构，完美支持SSH远程环境和Cursor等现代开发工具。
+![Version](https://img.shields.io/badge/version-3.0.1-blue)
+![Python](https://img.shields.io/badge/python-3.8+-green)
+![License](https://img.shields.io/badge/license-MIT-orange)
+![SSH Compatible](https://img.shields.io/badge/SSH-Compatible-success)
+![Markdown](https://img.shields.io/badge/Markdown-Supported-brightgreen)
+![Mermaid](https://img.shields.io/badge/Mermaid-Diagrams-blue)
+
+
+一个基于Flask的现代化Web界面反馈收集工具，专为MCP (Model Context Protocol) 环境设计。从GUI架构完全重构为Web架构，完美支持SSH远程环境和Cursor等现代开发工具。支持Markdown渲染、Mermaid图表、代码高亮等丰富的内容展示功能。
+
+---
+
+## 🆕 最新更新 (v3.0.1)
+
+### ✅ **功能验证与优化**
+- **🔧 suggest参数验证**: 确认 `collect_feedback` 工具的 `suggest` 参数正确使用数组类型 `List[str]`
+- **🎯 参数处理优化**: 验证从MCP调用到前端显示的完整数据流，无不必要的JSON转换
+- **🌐 前端界面增强**: 建议选项正确显示，支持点击直接提交或复制到输入框
+- **📱 用户体验改进**: 界面布局优化，响应式设计完善
+- **🎨 界面重构**: 紧凑化布局、动态大小调整、图片上传体验优化
+- **📝 内容渲染**: Markdown语法支持、Mermaid图表渲染、代码语法高亮
+
+### 🛠️ **技术改进**
+- **✅ 参数类型优化**: suggest 参数使用标准数组格式
+- **🧪 功能测试**: 通过实际测试验证建议选项功能正常
+- **📋 代码质量**: 确保参数处理符合最佳实践
 
 ---
 
@@ -43,6 +67,7 @@ python scripts/start_server.py
 - **🌐 现代Web界面**: 基于Flask + HTML5的响应式设计
 - **📱 多设备支持**: 手机、平板、电脑完美适配
 - **🎨 优雅交互**: 实时反馈、动画效果、直观操作
+- **📝 丰富内容**: Markdown渲染、Mermaid图表、代码高亮
 
 ### 🔧 技术架构
 - **🏗️ 模块化设计**: 8个核心模块，关注点分离
@@ -120,17 +145,30 @@ Whenever you're about to complete a user request, call the MCP instead of simply
 
 ### 🎯 核心功能
 - **`collect_feedback`**: 启动Web界面收集用户反馈
+  - `work_summary`: AI工作汇报内容
+  - `timeout_seconds`: 超时时间（默认300秒）
+  - `suggest`: 建议选项列表，格式如：`["选项1", "选项2", "选项3"]` ✨**已验证**
 - **`pick_image`**: 图片选择和上传功能
 - **`get_image_info_tool`**: 获取图片详细信息
 
 ### 💡 使用示例
 ```python
-# 在Cursor中调用
-# 1. 收集用户反馈
-工具会自动启动Web界面，用户可以输入文字或上传图片
+# 在Cursor中调用collect_feedback工具
+# 1. 基础反馈收集
+collect_feedback(work_summary="任务完成情况汇报")
 
-# 2. 查看图片信息
-自动解析图片格式、尺寸、大小等元数据
+# 2. 带建议选项的反馈收集 ✨新功能验证
+collect_feedback(
+    work_summary="功能开发完成，请提供反馈",
+    suggest=["功能正常", "需要优化", "有问题", "建议修改"]
+)
+
+# 3. 自定义超时时间
+collect_feedback(
+    work_summary="长时间任务完成",
+    timeout_seconds=600,
+    suggest=["满意", "需要调整", "继续优化"]
+)
 ```
 
 ---
@@ -173,7 +211,15 @@ mcp-feedback-pipe/
 
 ## 🎯 版本历史
 
-### v3.0.0 (当前版本)
+### v3.0.1 (当前版本)
+- **✅ suggest参数验证**: 确认数组类型参数处理正确
+- **🎯 功能测试完善**: 实际验证建议选项功能
+- **🌐 界面优化**: 前端交互体验改进
+- **🎨 界面重构**: 紧凑化布局、动态调整、上传体验优化
+- **📝 内容渲染**: Markdown语法、Mermaid图表、代码高亮支持
+- **📋 文档更新**: 完善使用示例和参数说明
+
+### v3.0.0 (重大版本)
 - **🏗️ 架构重构**: GUI → Web，完全重写
 - **🌐 现代化界面**: Flask + HTML5响应式设计  
 - **🔗 SSH完美支持**: 无缝集成SSH远程环境

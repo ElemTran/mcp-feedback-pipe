@@ -50,7 +50,8 @@ class FeedbackApp:
         @app.route('/')
         def index():
             work_summary = request.args.get('work_summary', '')
-            return render_template('feedback.html', work_summary=work_summary)
+            suggest = request.args.get('suggest', '')
+            return render_template('feedback.html', work_summary=work_summary, suggest=suggest)
         
         @app.route('/submit_feedback', methods=['POST'])
         def submit_feedback():

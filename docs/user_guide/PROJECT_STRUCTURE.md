@@ -66,10 +66,15 @@ mcp-feedback-pipe/
 ### 📝 文档组织
 ```
 docs/
-├── README.md           # 文档索引和快速导航
-├── SSH_SETUP.md       # Windows SSH配置专门指南
-├── DEPLOYMENT_GUIDE.md # 详细部署指南
-└── TEST_REPORT.md     # 测试覆盖率报告
+├── user_guide/
+│   ├── MCP_SETUP.md              # MCP配置完整指南
+│   ├── DEPLOYMENT_GUIDE.md       # 部署方案对比
+│   ├── SSH_SETUP.md             # SSH环境配置
+│   ├── ARCHITECTURE.md          # 系统架构设计
+│   ├── SUGGEST_PARAMETER_GUIDE.md # suggest参数使用指南 ✨新增
+│   ├── PROJECT_STRUCTURE.md     # 项目结构说明
+│   └── frontend_upgrade.md      # 前端升级说明
+└── README.md                    # 文档索引和快速导航
 ```
 
 ### 🧪 测试结构
@@ -164,6 +169,6 @@ pytest tests/e2e/ -v         # 端到端测试
 
 ---
 
-**更新时间**: 2024-12-31  
-**项目版本**: v3.0.0  
+**更新时间**: 2025-05-31  
+**项目版本**: v3.0.1  
 **架构类型**: 模块化Web应用 

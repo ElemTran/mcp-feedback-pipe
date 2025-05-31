@@ -31,7 +31,7 @@ class ServerManager:
             port = s.getsockname()[1]
         return port
     
-    def start_server(self, work_summary: str = "", timeout_seconds: int = 300) -> int:
+    def start_server(self, work_summary: str = "", timeout_seconds: int = 300, suggest: str = "") -> int:
         """启动Web服务器"""
         # 创建应用实例
         self.app = FeedbackApp(self.feedback_handler)
@@ -48,15 +48,18 @@ class ServerManager:
         time.sleep(1)
         
         # 打开浏览器
-        self._open_browser(work_summary)
+        self._open_browser(work_summary, suggest)
         
         return self.current_port
     
-    def _open_browser(self, work_summary: str) -> None:
+    def _open_browser(self, work_summary: str, suggest: str = "") -> None:
         """在浏览器中打开反馈页面"""
         try:
             encoded_summary = quote(work_summary)
+            encoded_suggest = quote(suggest) if suggest else ""
             url = f"http://127.0.0.1:{self.current_port}/?work_summary={encoded_summary}"
+            if encoded_suggest:
+                url += f"&suggest={encoded_suggest}"
             webbrowser.open(url)
         except Exception as e:
             print(f"无法自动打开浏览器: {e}")
