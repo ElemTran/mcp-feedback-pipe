@@ -1,17 +1,24 @@
-# 测试和开发工具
+# 开发工具和脚本
 
-本目录包含用于测试、验证和维护MCP反馈通道的各种工具脚本。
+本目录包含用于开发、测试、验证和维护MCP反馈通道的各种工具脚本。
 
 ## 📁 文件说明
 
-### 安全测试工具
+### 🚀 部署和发布工具
+- `publish_to_pypi.py` - PyPI发布脚本
+- `version_manager.py` - 版本管理工具
+- `mcp_deploy.py` - MCP部署脚本
+- `start_server.py` - 服务器启动脚本
+- `setup_ssh.py` - SSH环境配置脚本
+
+### 🔒 安全测试工具
 - `test_security_fixes.py` - 安全修复验证测试
   - 测试CSRF保护功能
   - 验证内存安全检查
   - 检查队列限制机制
   - 验证配置管理系统
 
-### 依赖管理工具
+### 📦 依赖管理工具
 - `update_sri_hashes.py` - SRI哈希值更新脚本
   - 自动获取CDN资源的SRI哈希值
   - 更新HTML模板中的完整性验证
@@ -22,24 +29,35 @@
   - 比较当前版本与最新版本
   - 生成更新建议报告
 
+### 🧪 测试和调试工具
+- `test_*.py` - 各种功能测试脚本
+- `debug_*.py` - 调试和诊断脚本
+- `check_*.py` - 检查和验证脚本
+
 ## 🚀 使用方法
 
 ### 运行安全测试
 ```bash
 # 从项目根目录运行
-python tests/tools/test_security_fixes.py
+python tools/test_security_fixes.py
 ```
 
 ### 检查依赖更新
 ```bash
 # 从项目根目录运行
-python tests/tools/check_dependency_updates.py
+python tools/check_dependency_updates.py
 ```
 
 ### 更新SRI哈希值
 ```bash
 # 从项目根目录运行
-python tests/tools/update_sri_hashes.py
+python tools/update_sri_hashes.py
+```
+
+### 发布到PyPI
+```bash
+# 从项目根目录运行
+python tools/publish_to_pypi.py
 ```
 
 ## 📋 依赖要求
@@ -71,6 +89,7 @@ python tests/tools/update_sri_hashes.py
 
 ## 📚 相关文档
 
-- [依赖版本管理](../../docs/dev_guide/dependencies/DEPENDENCY_VERSIONS.md)
-- [开发指南](../../docs/dev_guide/)
-- [测试指南](../README.md) 
+- [依赖版本管理](../docs/dev_guide/dependencies/DEPENDENCY_VERSIONS.md)
+- [开发指南](../docs/dev_guide/)
+- [测试指南](../tests/README.md)
+- [发布指南](../docs/dev_guide/PUBLISHING_GUIDE.md) 

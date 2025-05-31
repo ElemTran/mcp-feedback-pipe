@@ -9,6 +9,7 @@ import { initializeMarkdownRendering, initializeMermaid, updateWorkSummary } fro
 import { initializeImageHandlers } from './modules/image-handler.js';
 import { initializeSuggestOptions, submitSuggestion } from './modules/suggestion-handler.js';
 import { initializeFormHandlers, toggleReportSize, toggleFeedbackSize, toggleImageSection } from './modules/form-handler.js';
+import { initializeTimeoutHandler, stopCountdown, getRemainingTime } from './modules/timeout-handler.js';
 
 // 使用命名空间模式避免全局变量污染
 window.MCPFeedback = {
@@ -16,7 +17,9 @@ window.MCPFeedback = {
     toggleFeedbackSize,
     toggleImageSection,
     submitSuggestion,
-    updateWorkSummary
+    updateWorkSummary,
+    stopCountdown,
+    getRemainingTime
 };
 
 // 页面加载完成后初始化所有模块
@@ -48,7 +51,11 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeFormHandlers();
         console.log('✅ 表单处理模块初始化完成');
         
-        // 7. 启动服务器健康检查
+        // 7. 初始化超时处理
+        initializeTimeoutHandler();
+        console.log('✅ 超时处理模块初始化完成');
+        
+        // 8. 启动服务器健康检查
         startServerHealthCheck();
         console.log('✅ 服务器健康检查启动完成');
         

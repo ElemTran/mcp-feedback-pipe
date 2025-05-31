@@ -52,7 +52,7 @@
 ### 自动检查
 使用脚本定期检查依赖更新：
 ```bash
-python tests/tools/check_dependency_updates.py
+python tools/check_dependency_updates.py
 ```
 
 ### 更新原则
@@ -97,9 +97,9 @@ python scripts/download_dependencies.py
 ## 相关文件
 
 - `src/mcp_feedback_pipe/templates/feedback.html` - 依赖加载配置
-- `tests/tools/update_sri_hashes.py` - SRI哈希值更新脚本
-- `tests/tools/check_dependency_updates.py` - 依赖更新检查脚本
-- `tests/tools/test_security_fixes.py` - 安全修复验证测试
+- `tools/update_sri_hashes.py` - SRI哈希值更新脚本
+- `tools/check_dependency_updates.py` - 依赖更新检查脚本
+- `tools/test_security_fixes.py` - 安全修复验证测试
 
 ## 注意事项
 

@@ -26,6 +26,23 @@ class FeedbackHandler:
         with self._lock:
             self.result_queue.put(result)
     
+    def submit_feedback(self, feedback_data: Dict) -> None:
+        """提交反馈数据（用于Web表单）"""
+        # 转换为标准格式
+        result = {
+            'success': True,
+            'has_text': bool(feedback_data.get('text', '').strip()),
+            'text_feedback': feedback_data.get('text', '').strip(),
+            'has_images': len(feedback_data.get('images', [])) > 0,
+            'images': feedback_data.get('images', []),
+            'timestamp': datetime.now().isoformat(),
+            'metadata': {
+                'user_agent': feedback_data.get('user_agent', ''),
+                'ip_address': feedback_data.get('ip_address', 'unknown')
+            }
+        }
+        self.put_result(result)
+    
     def get_result(self, timeout: int = 300) -> Optional[Dict]:
         """从队列获取结果"""
         try:

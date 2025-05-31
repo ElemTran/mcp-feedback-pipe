@@ -68,6 +68,12 @@ async function handleSubmit(e) {
         
         if (result.success) {
             showAlert('反馈提交成功！感谢您的反馈。', 'success');
+            
+            // 停止倒计时
+            if (window.MCPFeedback && window.MCPFeedback.stopCountdown) {
+                window.MCPFeedback.stopCountdown();
+            }
+            
             setTimeout(() => {
                 window.close();
             }, 2000);

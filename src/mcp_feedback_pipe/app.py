@@ -71,10 +71,11 @@ class CSRFProtection:
 class FeedbackApp:
     """反馈收集Flask应用"""
     
-    def __init__(self, feedback_handler, work_summary: str = "", suggest_json: str = ""):
+    def __init__(self, feedback_handler, work_summary: str = "", suggest_json: str = "", timeout_seconds: int = 300):
         self.feedback_handler = feedback_handler
         self.work_summary = work_summary
         self.suggest_json = suggest_json
+        self.timeout_seconds = timeout_seconds
         self.csrf_protection = CSRFProtection()
         
     def create_app(self) -> Flask:
@@ -92,6 +93,11 @@ class FeedbackApp:
         
         return app
     
+    def run(self, host='127.0.0.1', port=5000, debug=False):
+        """运行Flask应用"""
+        app = self.create_app()
+        app.run(host=host, port=port, debug=debug, threaded=True)
+    
     def _register_routes(self, app: Flask):
         """注册所有路由"""
         
@@ -102,20 +108,13 @@ class FeedbackApp:
             return render_template('feedback.html', 
                                  work_summary=self.work_summary,
                                  suggest_json=self.suggest_json,
+                                 timeout_seconds=self.timeout_seconds,
                                  csrf_token=csrf_token)
         
-        @app.route('/submit', methods=['POST'])
+        @app.route('/submit_feedback', methods=['POST'])
         def submit_feedback():
             """提交反馈数据"""
             try:
-                # CSRF保护验证
-                csrf_token = request.form.get('csrf_token') or request.headers.get('X-CSRF-Token')
-                if not self.csrf_protection.validate_token(csrf_token):
-                    return jsonify({
-                        'success': False, 
-                        'message': 'CSRF令牌无效或已过期，请刷新页面重试'
-                    }), 403
-                
                 # 验证请求来源
                 if not self._validate_request_origin(request):
                     return jsonify({
@@ -123,8 +122,12 @@ class FeedbackApp:
                         'message': '请求来源验证失败'
                     }), 403
                 
-                # 处理反馈数据
-                feedback_data = self._process_feedback_data(request)
+                # 处理JSON数据
+                if request.is_json:
+                    feedback_data = self._process_json_feedback_data(request)
+                else:
+                    # 处理表单数据（保持向后兼容）
+                    feedback_data = self._process_feedback_data(request)
                 
                 # 内存安全检查
                 if not self._check_memory_safety(feedback_data):
@@ -169,6 +172,20 @@ class FeedbackApp:
             remote_addr = forwarded_for
         
         return any(allowed_ip in remote_addr for allowed_ip in allowed_ips)
+    
+    def _process_json_feedback_data(self, request) -> Dict[str, Any]:
+        """处理JSON格式的反馈数据"""
+        json_data = request.get_json()
+        
+        feedback_data = {
+            'text': json_data.get('textFeedback', '').strip() if json_data.get('textFeedback') else '',
+            'images': json_data.get('images', []),
+            'timestamp': time.time(),
+            'user_agent': request.headers.get('User-Agent', ''),
+            'ip_address': request.environ.get('REMOTE_ADDR', 'unknown')
+        }
+        
+        return feedback_data
     
     def _process_feedback_data(self, request) -> Dict[str, Any]:
         """处理反馈数据"""

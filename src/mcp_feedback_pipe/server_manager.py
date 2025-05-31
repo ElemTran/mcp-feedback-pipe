@@ -33,8 +33,13 @@ class ServerManager:
     
     def start_server(self, work_summary: str = "", timeout_seconds: int = 300, suggest: str = "") -> int:
         """启动Web服务器"""
-        # 创建应用实例
-        self.app = FeedbackApp(self.feedback_handler)
+        # 创建应用实例 - 使用关键字参数确保正确传递
+        self.app = FeedbackApp(
+            feedback_handler=self.feedback_handler,
+            work_summary=work_summary,
+            suggest_json=suggest,
+            timeout_seconds=timeout_seconds
+        )
         self.current_port = self.find_free_port()
         
         # 启动服务器线程

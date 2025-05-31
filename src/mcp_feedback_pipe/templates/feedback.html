@@ -73,8 +73,15 @@
             <div class="section work-report-section">
                 <div class="section-header">
                     📋 AI工作完成汇报
+                    <!-- 超时时间提示和进度条 -->
+                    <div class="timeout-info" id="timeoutInfo">
+                        <span id="timeoutMessage" class="timeout-message">此窗口将在 <span id="timeoutCountdown" class="timeout-countdown"></span> 后自动关闭</span>
+                    </div>
+                    <div class="timeout-progress-container">
+                        <div class="timeout-progress-bar" id="timeoutProgressBar"></div>
+                    </div>
                     <button type="button" class="btn btn-small" id="toggleReportBtn" onclick="window.MCPFeedback.toggleReportSize()" aria-label="调整汇报区域大小">
-                        📏 调整大小
+                        ↔️ 调整
                     </button>
                 </div>
                 <div class="section-content">
@@ -121,7 +128,7 @@
                         <!-- 操作按钮组 -->
                         <div class="inline-button-group">
                             <button type="button" class="btn btn-icon btn-compact" id="uploadBtn" title="上传图片" aria-label="选择图片文件上传">
-                                🖼️
+                                🖼️ 图片
                             </button>
                             <button type="button" class="btn btn-secondary btn-compact" onclick="window.close()" aria-label="取消并关闭窗口">
                                 ❌ 取消
@@ -135,7 +142,10 @@
                         <input type="file" id="fileInput" accept="image/*" multiple class="hidden">
                         
                         <!-- 隐藏的建议数据 -->
-                        <script type="application/json" id="suggestData">{{ suggest | safe }}</script>
+                        <script type="application/json" id="suggestData">{{ suggest_json | safe }}</script>
+                        
+                        <!-- 超时时间数据（保持在表单内部，JS读取用） -->
+                        <script type="application/json" id="timeoutData">{{ timeout_seconds }}</script>
                     </div>
                 </div>
             </form>

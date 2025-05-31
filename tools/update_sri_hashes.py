@@ -83,7 +83,7 @@ def get_sri_hashes() -> Dict[str, str]:
 def update_html_template(sri_hashes: Dict[str, str]) -> None:
     """更新HTML模板中的SRI哈希值"""
     template_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        os.path.dirname(os.path.dirname(__file__)),
         'src', 'mcp_feedback_pipe', 'templates', 'feedback.html'
     )
     
@@ -130,7 +130,7 @@ def update_html_template(sri_hashes: Dict[str, str]) -> None:
 def generate_sri_report(sri_hashes: Dict[str, str]) -> None:
     """生成SRI报告"""
     report_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+        os.path.dirname(os.path.dirname(__file__)),
         'SRI_HASHES_REPORT.md'
     )
     
