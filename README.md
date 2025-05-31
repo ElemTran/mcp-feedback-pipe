@@ -11,11 +11,11 @@
 ### ⭐ 推荐：uvx一键安装
 
 ```bash
-# PyPI发布完成后，零配置一键运行
+# ✅ PyPI正式发布，零配置一键运行
 uvx mcp-feedback-pipe
 ```
 
-> **📦 发布状态**: PyPI包已构建完成，使用全新名称`mcp-feedback-pipe`避免冲突
+> **🎉 发布状态**: 已正式发布到PyPI！使用全新名称`mcp-feedback-pipe`，无冲突，即装即用
 
 ### 📦 传统方式安装
 
@@ -58,7 +58,7 @@ python scripts/start_server.py
 
 ## 🛠️ Cursor MCP配置
 
-### 推荐配置 (uvx方式)
+### ⭐ 推荐配置 (PyPI版本)
 ```json
 {
   "mcpServers": {
@@ -66,13 +66,16 @@ python scripts/start_server.py
       "command": "uvx",
       "args": ["mcp-feedback-pipe"],
       "env": {
-        "MCP_USE_WEB": "true",
-        "MCP_DIALOG_TIMEOUT": "600"
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
       }
     }
   }
 }
 ```
+
+> **✅ 已发布**: 直接使用PyPI版本，自动获取最新更新
 
 ### 备选配置 (本地开发)
 ```json

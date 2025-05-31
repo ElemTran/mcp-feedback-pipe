@@ -19,15 +19,60 @@
 - `claude_desktop_config_v3.json` - 标准配置示例
 - `claude_desktop_config_deploy.json` - 使用部署脚本的配置示例
 
-## 🚀 推荐配置：uvx部署（零配置）
+## 🎉 推荐配置：PyPI版本（已发布）
 
 ### 优势
+- ✅ **即装即用**: 直接从PyPI安装，无需本地代码
+- ✅ **自动更新**: 使用最新发布版本
 - ✅ **零配置**: 无需手动设置虚拟环境和依赖
-- ✅ **自动管理**: uvx自动处理Python环境和包管理
-- ✅ **隔离安全**: 每个项目独立的运行环境
-- ✅ **便携性**: 配置文件简洁，易于分享
+- ✅ **便携性**: 配置文件极简，易于分享
 
-### 1. Cursor配置（推荐）
+### 1. Cursor配置（⭐ 推荐）
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe": {
+      "command": "uvx",
+      "args": [
+        "mcp-feedback-pipe"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+### 2. Claude Desktop配置（⭐ 推荐）
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe": {
+      "command": "uvx",
+      "args": [
+        "mcp-feedback-pipe"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+> **🎯 注意**: 使用PyPI版本无需指定 `--from` 参数，uvx会自动从PyPI下载最新版本
+
+## 🔧 备选配置：本地开发版本
+
+<details>
+<summary>点击展开本地开发配置（仅开发者使用）</summary>
+
+### 1. Cursor配置（本地开发）
 ```json
 {
   "mcpServers": {
@@ -47,7 +92,7 @@
 }
 ```
 
-### 2. Claude Desktop配置（推荐）
+### 2. Claude Desktop配置（本地开发）
 ```json
 {
   "mcpServers": {
@@ -66,6 +111,8 @@
   }
 }
 ```
+
+</details>
 
 ## 🔧 传统配置（备选方案）
 
@@ -134,7 +181,60 @@
 
 ## 🛠️ 安装配置步骤
 
-### uvx方式（推荐）
+### ⭐ PyPI版本（推荐）
+
+#### 1. 安装uvx
+```bash
+pip install uv
+```
+
+#### 2. 直接配置MCP
+无需下载代码，直接配置MCP即可：
+
+**Cursor配置** (`~/.cursor/mcp.json`):
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe": {
+      "command": "uvx",
+      "args": ["mcp-feedback-pipe"],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+**Claude Desktop配置** (`~/.config/claude-desktop/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "mcp-feedback-pipe": {
+      "command": "uvx",
+      "args": ["mcp-feedback-pipe"],
+      "env": {
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_DIALOG_TIMEOUT": "600",
+        "MCP_USE_WEB": "true"
+      }
+    }
+  }
+}
+```
+
+#### 3. 测试安装
+```bash
+# 测试PyPI包是否可用
+uvx mcp-feedback-pipe --help
+```
+
+### 🔧 本地开发版本（仅开发者）
+
+<details>
+<summary>点击展开本地开发安装步骤</summary>
 
 #### 1. 安装uvx
 ```bash
@@ -143,7 +243,7 @@ pip install uv
 
 #### 2. 获取项目
 ```bash
-git clone https://github.com/your-username/mcp-feedback-pipe.git
+git clone https://github.com/ElemTran/mcp-feedback-pipe.git
 ```
 
 #### 3. 更新配置路径
@@ -161,6 +261,8 @@ cp docs/claude_desktop_config_uvx.json ~/.cursor/mcp.json
 # 对于Claude Desktop
 cp docs/claude_desktop_config_uvx.json ~/.config/claude-desktop/claude_desktop_config.json
 ```
+
+</details>
 
 ### 传统方式（备选）
 

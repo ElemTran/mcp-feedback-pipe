@@ -11,9 +11,25 @@ import getpass
 import json
 from pathlib import Path
 
-def run_command(cmd, check=True):
+def mask_token(cmd):
+    """脱敏token信息"""
+    if "--token" in cmd:
+        parts = cmd.split()
+        for i, part in enumerate(parts):
+            if part == "--token" and i + 1 < len(parts):
+                token = parts[i + 1]
+                if token.startswith("pypi-") and len(token) > 10:
+                    # 只显示前缀和后4位，中间用*代替
+                    masked = f"pypi-{'*' * (len(token) - 9)}{token[-4:]}"
+                    parts[i + 1] = masked
+                break
+        return " ".join(parts)
+    return cmd
+
+def run_command(cmd, check=True, mask_sensitive=False):
     """运行命令并返回结果"""
-    print(f"🔧 执行: {cmd}")
+    display_cmd = mask_token(cmd) if mask_sensitive else cmd
+    print(f"🔧 执行: {display_cmd}")
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if check and result.returncode != 0:
         print(f"❌ 命令失败: {result.stderr}")
@@ -82,10 +98,24 @@ def build_package():
     
     return dist_files
 
+def get_testpypi_token():
+    """获取TestPyPI API token"""
+    print("\n🔑 TestPyPI认证配置")
+    print("请访问 https://test.pypi.org/manage/account/token/ 创建TestPyPI API token")
+    print("Token范围选择: 'Entire account' (首次发布) 或 'Scope to project' (后续)")
+    
+    token = getpass.getpass("请输入TestPyPI API token (格式: pypi-...): ")
+    
+    if not token.startswith("pypi-"):
+        print("❌ Token格式错误，应该以 'pypi-' 开头")
+        return get_testpypi_token()
+    
+    return token
+
 def get_pypi_token():
     """获取PyPI API token"""
     print("\n🔑 PyPI认证配置")
-    print("请访问 https://pypi.org/manage/account/token/ 创建API token")
+    print("请访问 https://pypi.org/manage/account/token/ 创建PyPI API token")
     print("Token范围选择: 'Entire account' (首次发布) 或 'Scope to project' (后续)")
     
     token = getpass.getpass("请输入PyPI API token (格式: pypi-...): ")
@@ -101,14 +131,20 @@ def publish_to_testpypi(token):
     print("🧪 发布到TestPyPI（测试环境）...")
     
     cmd = f'uv publish --token {token} --publish-url https://test.pypi.org/legacy/'
-    result = run_command(cmd, check=False)
+    result = run_command(cmd, check=False, mask_sensitive=True)
     
     if result.returncode == 0:
         print("✅ TestPyPI发布成功!")
         print("🔗 查看: https://test.pypi.org/project/mcp-feedback-pipe/")
+        print("🧪 测试安装: pip install -i https://test.pypi.org/simple/ mcp-feedback-pipe")
         return True
     else:
         print(f"❌ TestPyPI发布失败: {result.stderr}")
+        if "403 Forbidden" in result.stderr:
+            print("💡 可能的解决方案:")
+            print("   1. 确认您使用的是TestPyPI的token (https://test.pypi.org/manage/account/token/)")
+            print("   2. 确认token权限正确（建议使用'Entire account'权限）")
+            print("   3. 确认包名在TestPyPI上没有被占用")
         return False
 
 def publish_to_pypi(token):
@@ -121,7 +157,7 @@ def publish_to_pypi(token):
         return False
     
     cmd = f'uv publish --token {token}'
-    result = run_command(cmd, check=False)
+    result = run_command(cmd, check=False, mask_sensitive=True)
     
     if result.returncode == 0:
         print("🎉 正式PyPI发布成功!")
@@ -129,6 +165,11 @@ def publish_to_pypi(token):
         return True
     else:
         print(f"❌ 正式PyPI发布失败: {result.stderr}")
+        if "403 Forbidden" in result.stderr:
+            print("💡 可能的解决方案:")
+            print("   1. 确认您使用的是PyPI的token (https://pypi.org/manage/account/token/)")
+            print("   2. 确认token权限正确（建议使用'Entire account'权限）")
+            print("   3. 确认包名在PyPI上没有被占用")
         return False
 
 def test_installation():
@@ -180,10 +221,7 @@ def main():
         # 3. 构建包
         dist_files = build_package()
         
-        # 4. 获取API token
-        token = get_pypi_token()
-        
-        # 5. 选择发布方式
+        # 4. 选择发布方式
         print("\n📤 发布选项:")
         print("1. 仅发布到TestPyPI（推荐首次发布）")
         print("2. 发布到TestPyPI + 正式PyPI")
@@ -194,11 +232,14 @@ def main():
         success_testpypi = False
         success_pypi = False
         
+        # 5. 根据选择获取相应token并发布
         if choice in ['1', '2']:
-            success_testpypi = publish_to_testpypi(token)
+            testpypi_token = get_testpypi_token()
+            success_testpypi = publish_to_testpypi(testpypi_token)
             
         if choice in ['2', '3'] and (choice == '3' or success_testpypi):
-            success_pypi = publish_to_pypi(token)
+            pypi_token = get_pypi_token()
+            success_pypi = publish_to_pypi(pypi_token)
         
         # 6. 保存配置
         save_publish_config(project_info, success_testpypi, success_pypi)
