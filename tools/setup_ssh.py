@@ -196,11 +196,11 @@ def main():
     print(f"2. 连接成功后，在SSH会话中启动MCP服务:")
     print(f"   cd /path/to/mcp-feedback-pipe")
     print(f"   source .venv/bin/activate")
-    print(f"   python scripts/start_server.py")
+    print(f"   python tools/start_server.py")
     print(f"3. 在Windows浏览器中访问:")
     print(f"   http://localhost:{config['local_port']}")
     
     print(f"\n🎉 配置完成！")
 
 if __name__ == "__main__":
-    main() 
+    main()

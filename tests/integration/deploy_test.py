@@ -7,18 +7,15 @@ import sys
 import subprocess
 from pathlib import Path
 
-# 添加src目录到Python路径
-current_dir = Path(__file__).parent.parent.parent  # 回到项目根目录
-src_dir = current_dir / 'src'
-sys.path.insert(0, str(src_dir))
+# 移除src目录路径添加
 
 def test_imports():
     """测试模块导入"""
     print("📦 测试模块导入...")
     try:
-        import mcp_feedback_pipe
-        from mcp_feedback_pipe import server
-        from mcp_feedback_pipe.app import FeedbackApp
+        import backend
+        from backend import server
+        from backend.app import FeedbackApp
         print("✅ 模块导入成功")
         return True
     except ImportError as e:
@@ -29,8 +26,8 @@ def test_flask_app():
     """测试Flask应用"""
     print("🌐 测试Flask应用...")
     try:
-        from mcp_feedback_pipe.app import FeedbackApp
-        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
+        from backend.app import FeedbackApp
+        from backend.feedback_handler import FeedbackHandler
         
         # 创建反馈处理器和应用实例
         handler = FeedbackHandler()
@@ -115,4 +112,4 @@ def main():
 
 if __name__ == "__main__":
     success = main()
-    sys.exit(0 if success else 1) 
+    sys.exit(0 if success else 1)

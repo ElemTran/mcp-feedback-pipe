@@ -4,4 +4,4 @@ MCP反馈通道测试套件
 """
 
 __version__ = "3.0.5"
-__test_author__ = "MCP Feedback Collector Test Team" 
+__test_author__ = "MCP Feedback Collector Test Team"

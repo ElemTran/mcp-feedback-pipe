@@ -8,19 +8,14 @@ import sys
 import os
 import time
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-src_dir = os.path.join(project_root, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+# 移除src目录路径添加
 
 def test_config_management():
     """测试统一配置管理"""
     print("🧪 测试统一配置管理...")
     
     try:
-        from mcp_feedback_pipe.config import get_config, get_security_config, get_server_config
+        from backend.config import get_config, get_security_config, get_server_config
         
         print("1. 获取配置管理器...")
         config = get_config()
@@ -57,7 +52,7 @@ def test_csrf_protection():
     print("\n🧪 测试CSRF保护...")
     
     try:
-        from mcp_feedback_pipe.app import CSRFProtection
+        from backend.app import CSRFProtection
         
         print("1. 创建CSRF保护实例...")
         csrf = CSRFProtection()
@@ -94,8 +89,8 @@ def test_memory_safety():
     print("\n🧪 测试内存安全检查...")
     
     try:
-        from mcp_feedback_pipe.app import FeedbackApp
-        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
+        from backend.app import FeedbackApp
+        from backend.feedback_handler import FeedbackHandler
         
         print("1. 创建应用实例...")
         handler = FeedbackHandler()
@@ -143,7 +138,7 @@ def test_queue_limits():
     print("\n🧪 测试队列限制...")
     
     try:
-        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
+        from backend.feedback_handler import FeedbackHandler
         
         print("1. 创建有限制的反馈处理器...")
         handler = FeedbackHandler(max_queue_size=3)
@@ -179,7 +174,7 @@ def test_version_history():
     print("\n🧪 测试版本历史修复...")
     
     try:
-        from mcp_feedback_pipe.version import VERSION_HISTORY, get_version_history
+        from backend.version import VERSION_HISTORY, get_version_history
         
         print("1. 检查版本历史...")
         history = get_version_history()
@@ -219,4 +214,4 @@ if __name__ == "__main__":
     print("✅ 配置管理 - 统一配置，避免硬编码")
     print("✅ 版本历史 - 清理重复条目")
     print("✅ 图片验证 - 文件头魔数验证")
-    print("✅ 文件安全 - 安全文件名处理") 
+    print("✅ 文件安全 - 安全文件名处理")

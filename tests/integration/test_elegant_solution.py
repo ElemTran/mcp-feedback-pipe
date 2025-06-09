@@ -8,18 +8,14 @@ import sys
 import os
 import time
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+# 移除src目录路径添加
 
 def test_server_pool():
     """测试服务器池功能"""
     print("🧪 测试服务器池优雅解决方案...")
     
     try:
-        from mcp_feedback_pipe.server_pool import get_server_pool, get_managed_server, release_managed_server
+        from backend.server_pool import get_server_pool, get_managed_server, release_managed_server
         
         print("1. 获取服务器池实例...")
         pool = get_server_pool()
@@ -54,7 +50,7 @@ def test_mcp_tool_with_pool():
     print("\n🧪 测试MCP工具与服务器池集成...")
     
     try:
-        from mcp_feedback_pipe.server import collect_feedback
+        from backend.server import collect_feedback
         
         print("1. 模拟MCP工具调用...")
         
@@ -101,4 +97,4 @@ def test_mcp_tool_with_pool():
 if __name__ == "__main__":
     test_server_pool()
     test_mcp_tool_with_pool()
-    print("\n🎉 所有测试完成！") 
+    print("\n🎉 所有测试完成！")

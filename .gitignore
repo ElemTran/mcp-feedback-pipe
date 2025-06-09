@@ -70,7 +70,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-
+docs/refactoring/
 # PyBuilder
 .pybuilder/
 target/
@@ -160,7 +160,9 @@ cython_debug/
 
 # VSCode
 .vscode/
-
+#ai
+.roo
+.cursor
 # macOS
 .DS_Store
 
@@ -178,8 +180,11 @@ ssh_scripts/
 *.bak
 *.swp
 *~
+#node_modules
+node_modules/
 
 # PyPI发布相关
 *.egg-info/
 .publish_config.json
 build/
+.windsurf/

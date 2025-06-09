@@ -7,12 +7,6 @@ import sys
 import os
 import traceback
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
-
 def debug_mcp_collect_feedback():
     """详细调试MCP collect_feedback调用"""
     print("=== MCP工具调用详细调试 ===")
@@ -20,12 +14,12 @@ def debug_mcp_collect_feedback():
     try:
         # 1. 测试模块导入
         print("1. 测试模块导入...")
-        from mcp_feedback_pipe.server import collect_feedback
+        from backend.server import collect_feedback
         print("✓ collect_feedback导入成功")
         
         # 2. 测试ServerManager
         print("2. 测试ServerManager...")
-        from mcp_feedback_pipe.server_manager import ServerManager
+        from backend.server_manager import ServerManager
         server_manager = ServerManager()
         print("✓ ServerManager创建成功")
         
@@ -103,4 +97,4 @@ def debug_mcp_collect_feedback():
 
 if __name__ == "__main__":
     success = debug_mcp_collect_feedback()
-    print(f"\n=== 调试结果: {'成功' if success else '失败'} ===") 
+    print(f"\n=== 调试结果: {'成功' if success else '失败'} ===")

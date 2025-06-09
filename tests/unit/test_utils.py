@@ -7,12 +7,11 @@ import pytest
 from unittest.mock import patch, MagicMock
 from pathlib import Path
 
-from mcp_feedback_pipe.utils import (
+from backend.utils import (
     get_image_info,
-    validate_image_data,
-    format_feedback_summary
+    validate_image_data
 )
-
+from backend.utils import format_feedback_summary
 
 class TestGetImageInfo:
     """测试get_image_info函数"""
@@ -22,16 +21,16 @@ class TestGetImageInfo:
         result = get_image_info("/nonexistent/path.jpg")
         assert "文件不存在" in result
     
-    @patch('mcp_feedback_pipe.utils.PIL_AVAILABLE', False)
+    @patch('backend.utils.PIL_AVAILABLE', False)
     def test_get_image_info_no_pil(self):
         """测试PIL不可用的情况"""
         result = get_image_info("test.jpg")
         assert "Pillow库未安装" in result
     
-    @patch('mcp_feedback_pipe.utils.PIL_AVAILABLE', True)
-    @patch('mcp_feedback_pipe.utils.Image.open')
-    @patch('mcp_feedback_pipe.utils.Path.exists', return_value=True)
-    @patch('mcp_feedback_pipe.utils.Path.stat')
+    @patch('backend.utils.PIL_AVAILABLE', True)
+    @patch('backend.utils.Image.open')
+    @patch('backend.utils.Path.exists', return_value=True)
+    @patch('backend.utils.Path.stat')
     def test_get_image_info_success(self, mock_stat, mock_exists, mock_open):
         """测试成功获取图片信息"""
         # 设置模拟数据
@@ -53,18 +52,17 @@ class TestGetImageInfo:
         assert "模式: RGB" in result
         assert "2.0 KB" in result
 
-
 class TestValidateImageData:
     """测试validate_image_data函数"""
     
-    @patch('mcp_feedback_pipe.utils.PIL_AVAILABLE', False)
+    @patch('backend.utils.PIL_AVAILABLE', False)
     def test_validate_image_data_no_pil(self):
         """测试PIL不可用的情况"""
         result = validate_image_data(b"fake_data")
         assert result is False
     
-    @patch('mcp_feedback_pipe.utils.PIL_AVAILABLE', True)
-    @patch('mcp_feedback_pipe.utils.Image.open')
+    @patch('backend.utils.PIL_AVAILABLE', True)
+    @patch('backend.utils.Image.open')
     def test_validate_image_data_valid(self, mock_open):
         """测试有效图片数据"""
         mock_img = MagicMock()
@@ -73,13 +71,12 @@ class TestValidateImageData:
         result = validate_image_data(b"valid_image_data")
         assert result is True
     
-    @patch('mcp_feedback_pipe.utils.PIL_AVAILABLE', True)
-    @patch('mcp_feedback_pipe.utils.Image.open', side_effect=Exception("Invalid"))
+    @patch('backend.utils.PIL_AVAILABLE', True)
+    @patch('backend.utils.Image.open', side_effect=Exception("Invalid"))
     def test_validate_image_data_invalid(self, mock_open):
         """测试无效图片数据"""
         result = validate_image_data(b"invalid_data")
         assert result is False
-
 
 class TestFormatFeedbackSummary:
     """测试format_feedback_summary函数"""
@@ -113,4 +110,4 @@ class TestFormatFeedbackSummary:
         result = format_feedback_summary("测试反馈", 2, "2024-01-01T12:00:00Z")
         assert "📝 文字反馈: 测试反馈" in result
         assert "🖼️ 图片数量: 2张" in result
-        assert "⏰ 提交时间: 2024-01-01T12:00:00Z" in result 
+        assert "⏰ 提交时间: 2024-01-01T12:00:00Z" in result

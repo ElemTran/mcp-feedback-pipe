@@ -7,8 +7,7 @@ import pytest
 import socket
 from unittest.mock import MagicMock, patch, Mock
 
-from mcp_feedback_pipe.server_manager import ServerManager
-
+from backend.server_manager import ServerManager
 
 class TestServerManager:
     """测试ServerManager类"""
@@ -60,7 +59,7 @@ class TestServerManager:
         assert info['url'] == "http://127.0.0.1:8080"
         assert info['is_running'] is True
     
-    @patch('mcp_feedback_pipe.server_manager.FeedbackApp')
+    @patch('backend.server_manager.FeedbackApp')
     @patch('threading.Thread')
     @patch('time.sleep')
     def test_start_server(self, mock_sleep, mock_thread, mock_feedback_app):
@@ -79,8 +78,8 @@ class TestServerManager:
         mock_thread.assert_called_once()
         mock_open_browser.assert_called_once_with("测试工作汇报")
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
-    @patch('mcp_feedback_pipe.server_manager.quote')
+    @patch('backend.server_manager.webbrowser.open')
+    @patch('backend.server_manager.quote')
     def test_open_browser_success(self, mock_quote, mock_webbrowser):
         """测试成功打开浏览器"""
         manager = ServerManager()
@@ -94,8 +93,8 @@ class TestServerManager:
             "http://127.0.0.1:8080/?work_summary=encoded_summary"
         )
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open', side_effect=Exception("浏览器错误"))
-    @patch('mcp_feedback_pipe.server_manager.quote')
+    @patch('backend.server_manager.webbrowser.open', side_effect=Exception("浏览器错误"))
+    @patch('backend.server_manager.quote')
     @patch('builtins.print')
     def test_open_browser_failure(self, mock_print, mock_quote, mock_webbrowser):
         """测试浏览器打开失败"""
@@ -143,14 +142,13 @@ class TestServerManager:
         
         # 验证没有异常抛出，这个测试主要检查不会崩溃
 
-
 class TestServerManagerIntegration:
     """服务器管理器集成测试"""
     
-    @patch('mcp_feedback_pipe.server_manager.FeedbackApp')
+    @patch('backend.server_manager.FeedbackApp')
     @patch('threading.Thread')
     @patch('time.sleep')
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
+    @patch('backend.server_manager.webbrowser.open')
     def test_full_server_lifecycle(self, mock_webbrowser, mock_sleep, 
                                   mock_thread, mock_feedback_app):
         """测试完整的服务器生命周期"""
@@ -165,4 +163,4 @@ class TestServerManagerIntegration:
         
         # 停止服务器
         manager.stop_server()
-        assert manager.current_port is None 
+        assert manager.current_port is None

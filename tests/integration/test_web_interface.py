@@ -8,9 +8,8 @@ import json
 import base64
 from unittest.mock import patch, MagicMock
 
-from mcp_feedback_pipe.app import FeedbackApp
-from mcp_feedback_pipe.feedback_handler import FeedbackHandler
-
+from backend.app import FeedbackApp
+from backend.feedback_handler import FeedbackHandler
 
 class TestWebInterfaceIntegration:
     """Web界面集成测试"""
@@ -171,7 +170,6 @@ class TestWebInterfaceIntegration:
         assert response.status_code == 200
         assert 'javascript' in response.content_type or 'text/plain' in response.content_type
 
-
 class TestDataProcessing:
     """数据处理集成测试"""
     
@@ -234,4 +232,4 @@ class TestDataProcessing:
         # 验证每个图片都被正确处理
         for i, img in enumerate(result['images']):
             assert img['data'] == f'image_{i}_data'.encode()
-            assert img['name'] == f'test_{i}.png' 
+            assert img['name'] == f'test_{i}.png'

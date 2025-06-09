@@ -12,22 +12,22 @@ print('Python路径:')
 for i, path in enumerate(sys.path):
     print(f'  {i}: {path}')
 
-print('\n=== 尝试导入mcp_feedback_pipe ===')
+print('\n=== 尝试导入backend ===')
 try:
-    import mcp_feedback_pipe
-    print('✓ mcp_feedback_pipe导入成功')
-    print('包位置:', mcp_feedback_pipe.__file__)
+    import backend
+    print('✓ backend导入成功')
+    print('包位置:', backend.__file__)
 except Exception as e:
     print('✗ 导入失败:', e)
 
 print('\n=== 检查sys.modules中的相关模块 ===')
 for name in sorted(sys.modules.keys()):
-    if 'mcp_feedback_pipe' in name:
+    if 'backend' in name:
         print(f'  {name}: {sys.modules[name]}')
 
 print('\n=== 尝试导入server模块 ===')
 try:
-    from mcp_feedback_pipe import server
+    from backend import server
     print('✓ server模块导入成功')
     print('server位置:', server.__file__)
 except Exception as e:
@@ -35,7 +35,7 @@ except Exception as e:
 
 print('\n=== 检查MCP工具注册 ===')
 try:
-    from mcp_feedback_pipe.server import mcp
+    from backend.server import mcp
     print('✓ mcp对象导入成功')
     print('mcp对象类型:', type(mcp))
     
@@ -53,4 +53,4 @@ try:
         print('✗ 列出工具失败:', e)
         
 except Exception as e:
-    print('✗ mcp对象导入失败:', e) 
+    print('✗ mcp对象导入失败:', e)

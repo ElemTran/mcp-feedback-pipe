@@ -11,12 +11,8 @@ from pathlib import Path
 
 def setup_environment():
     """设置环境"""
-    # 添加src目录到Python路径
+    # 检查虚拟环境
     current_dir = Path(__file__).parent.parent
-    src_dir = current_dir / 'src'
-    sys.path.insert(0, str(src_dir))
-    
-    # 激活虚拟环境
     venv_activate = current_dir / '.venv' / 'bin' / 'activate'
     if venv_activate.exists():
         print("✅ 虚拟环境已找到")
@@ -29,7 +25,7 @@ def start_web_service():
     """启动Web服务"""
     print("🌐 启动Web服务...")
     
-    from mcp_feedback_pipe.server_manager import ServerManager
+    from backend.server_manager import ServerManager
     
     sm = ServerManager()
     port = sm.start_server("MCP反馈通道Web服务已启动", timeout_seconds=60)
@@ -40,7 +36,7 @@ def start_web_service():
     # 检查SSH环境
     ssh_indicators = [
         os.getenv('SSH_CLIENT'),
-        os.getenv('SSH_CONNECTION'), 
+        os.getenv('SSH_CONNECTION'),
         os.getenv('SSH_TTY')
     ]
     
@@ -56,7 +52,7 @@ def start_mcp_server():
     print("🚀 启动MCP服务器...")
     
     try:
-        from mcp_feedback_pipe.server import main
+        from backend.server import main
         main()
     except Exception as e:
         print(f"❌ MCP服务器启动失败: {e}")
@@ -117,4 +113,4 @@ def main():
         print("❌ 无效选择")
 
 if __name__ == "__main__":
-    main() 
+    main()

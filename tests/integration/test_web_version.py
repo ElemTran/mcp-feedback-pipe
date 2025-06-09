@@ -8,45 +8,43 @@ import sys
 import os
 from pathlib import Path
 
-# 添加src目录到Python路径 - 适配新的测试目录结构
+# 定义项目根目录，但移除src目录路径添加
 project_root = Path(__file__).parent.parent.parent
-src_dir = project_root / "src"
-sys.path.insert(0, str(src_dir))
 
 def test_imports():
     """测试模块导入"""
     print("📦 测试模块导入...")
     
     try:
-        from mcp_feedback_pipe.server_manager import ServerManager
+        from backend.server_manager import ServerManager
         print("   ✅ ServerManager 模块")
     except ImportError as e:
         print(f"   ❌ ServerManager 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_pipe.app import FeedbackApp
+        from backend.app import FeedbackApp
         print("   ✅ FeedbackApp 模块")
     except ImportError as e:
         print(f"   ❌ FeedbackApp 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_pipe.feedback_handler import FeedbackHandler
+        from backend.feedback_handler import FeedbackHandler
         print("   ✅ FeedbackHandler 模块")
     except ImportError as e:
         print(f"   ❌ FeedbackHandler 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_pipe.utils import get_image_info
+        from backend.utils import get_image_info
         print("   ✅ Utils 模块")
     except ImportError as e:
         print(f"   ❌ Utils 导入失败: {e}")
         return False
     
     try:
-        from mcp_feedback_pipe import collect_feedback, pick_image
+        from backend import collect_feedback, pick_image
         print("   ✅ 主要工具函数")
     except ImportError as e:
         print(f"   ❌ 主要工具函数导入失败: {e}")
@@ -60,7 +58,7 @@ def test_web_interface():
     print("="*50)
     
     try:
-        from mcp_feedback_pipe.server_manager import ServerManager
+        from backend.server_manager import ServerManager
         
         # 创建服务器管理器
         server_manager = ServerManager()
@@ -178,7 +176,7 @@ def check_file_structure():
     print("\n📁 检查文件结构")
     print("="*25)
     
-    base_path = project_root / "src" / "mcp_feedback_pipe"
+    base_path = project_root / "backend"
     
     files_to_check = [
         "server.py",
@@ -239,4 +237,4 @@ def main():
     print("  • 🔧 更好的可维护性和扩展性")
 
 if __name__ == "__main__":
-    main() 
+    main()

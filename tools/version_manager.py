@@ -11,18 +11,14 @@ import json
 from pathlib import Path
 from typing import Tuple, Optional
 
-# 添加src目录到路径
-current_dir = Path(__file__).parent
-project_root = current_dir.parent
-src_dir = project_root / "src"
-sys.path.insert(0, str(src_dir))
+# 项目根目录
+project_root = Path(__file__).parent.parent
 
 try:
-    from mcp_feedback_pipe.version import __version__, __version_info__
+    from backend.version import __version__, __version_info__
 except ImportError:
     print("❌ 无法导入版本信息，请确保项目结构正确")
     sys.exit(1)
-
 
 class VersionManager:
     """版本管理器"""
@@ -35,8 +31,8 @@ class VersionManager:
         # 需要更新版本号的文件列表
         self.version_files = {
             "pyproject.toml": self._update_pyproject_toml,
-            "src/mcp_feedback_pipe/version.py": self._update_version_py,
-            "src/mcp_feedback_pipe/__init__.py": self._update_init_py,
+            "backend/version.py": self._update_version_py,
+            "backend/__init__.py": self._update_init_py,
             "tests/__init__.py": self._update_tests_init_py,
         }
     
@@ -99,7 +95,7 @@ class VersionManager:
     
     def _update_version_py(self, new_version: str) -> bool:
         """更新 version.py 中的版本号"""
-        file_path = self.project_root / "src/mcp_feedback_pipe/version.py"
+        file_path = self.project_root / "backend/version.py"
         if not file_path.exists():
             print(f"❌ 文件不存在: {file_path}")
             return False
@@ -145,7 +141,7 @@ class VersionManager:
     
     def _update_init_py(self, new_version: str) -> bool:
         """检查 __init__.py 是否正确导入版本信息"""
-        file_path = self.project_root / "src/mcp_feedback_pipe/__init__.py"
+        file_path = self.project_root / "backend/__init__.py"
         if not file_path.exists():
             print(f"❌ 文件不存在: {file_path}")
             return False
@@ -227,7 +223,6 @@ class VersionManager:
             "next_major": self.increment_version("major"),
         }
 
-
 def main():
     """主函数"""
     print("🎯 MCP反馈通道 - 版本管理工具")
@@ -289,6 +284,5 @@ def main():
         print(f"\n❌ 发生错误: {e}")
         return 1
 
-
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())

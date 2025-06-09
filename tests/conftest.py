@@ -7,10 +7,8 @@ from pathlib import Path
 
 import pytest
 
-# 添加src目录到Python路径
+# 移除src目录路径添加
 project_root = Path(__file__).parent.parent
-src_dir = project_root / 'src'
-sys.path.insert(0, str(src_dir))
 
 @pytest.fixture
 def project_root_path():
@@ -20,19 +18,19 @@ def project_root_path():
 @pytest.fixture 
 def src_path():
     """源代码目录路径"""
-    return src_dir
+    return project_root / 'backend'
 
 @pytest.fixture
 def feedback_handler():
     """创建反馈处理器实例"""
-    from mcp_feedback_pipe.feedback_handler import FeedbackHandler
+    from backend.feedback_handler import FeedbackHandler
     return FeedbackHandler()
 
 @pytest.fixture
 def mock_flask_app():
     """创建模拟Flask应用"""
-    from mcp_feedback_pipe.app import FeedbackApp
-    from mcp_feedback_pipe.feedback_handler import FeedbackHandler
+    from backend.app import FeedbackApp
+    from backend.feedback_handler import FeedbackHandler
     
     handler = FeedbackHandler()
     app = FeedbackApp(handler)
@@ -46,4 +44,4 @@ def test_image_data():
         'data': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
         'source': 'test',
         'name': 'test.png'
-    } 
+    }

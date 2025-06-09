@@ -107,7 +107,7 @@ pip install mcp-feedback-pipe
 
 # 启动服务（绑定到所有接口，注意安全）
 python -c "
-from mcp_feedback_pipe.server_manager import ServerManager
+from backend.server_manager import ServerManager
 sm = ServerManager()
 port = sm.start_server('测试连接', 300)
 print(f'访问地址: http://your-cloud-server-ip:{port}')
@@ -115,63 +115,14 @@ sm.wait_for_feedback(300)
 "
 ```
 
-**安全注意事项:**
-- 只在可信网络环境下使用
-- 考虑使用VPN或防火墙限制访问
-- 使用完毕后及时关闭服务
-
-## 🛠️ 故障排除
-
-### 1. 端口被占用
-```bash
-# 查找占用端口的进程
-lsof -i :5000
-netstat -tulpn | grep 5000
-
-# 杀死占用进程
-kill -9 <PID>
-```
-
-### 2. SSH连接问题
-```bash
-# 检查SSH连接状态
-ssh -v user@remote-server
-
-# 测试端口转发
-curl http://127.0.0.1:5000/ping
-```
-
-### 3. 防火墙问题
-```bash
-# Ubuntu/Debian
-sudo ufw allow 5000
-
-# CentOS/RHEL
-sudo firewall-cmd --add-port=5000/tcp --permanent
-sudo firewall-cmd --reload
-```
-
-## 📋 最佳实践
-
-### 1. 安全建议
-- 使用SSH密钥认证而非密码
-- 定期更新SSH配置
-- 限制端口转发的IP范围
-- 使用VPN进行远程访问
-
-### 2. 性能优化
-- 使用压缩: `ssh -C -L 5000:127.0.0.1:5000 user@server`
-- 保持连接: `ssh -o ServerAliveInterval=60`
-- 多路复用: `ssh -o ControlMaster=auto`
-
 ### 3. 开发调试
 ```bash
 # 启用详细日志
-export PYTHONPATH=/path/to/mcp-feedback-pipe/src
+export PYTHONPATH=/path/to/mcp-feedback-pipe
 python -c "
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from mcp_feedback_pipe import collect_feedback
+from backend import collect_feedback
 collect_feedback('调试测试', 300)
 "
 ```
@@ -181,7 +132,7 @@ collect_feedback('调试测试', 300)
 ### 1. 自定义端口范围
 ```python
 # 在代码中指定端口范围
-from mcp_feedback_pipe.server_manager import ServerManager
+from backend.server_manager import ServerManager
 
 class CustomServerManager(ServerManager):
     def find_free_port(self):
@@ -195,13 +146,3 @@ class CustomServerManager(ServerManager):
                 continue
         raise Exception("无可用端口")
 ```
-
-### 2. 多设备同时访问
-```bash
-# 启动多个实例
-uvx mcp-feedback-pipe &  # 端口5000
-uvx mcp-feedback-pipe &  # 端口5001
-uvx mcp-feedback-pipe &  # 端口5002
-```
-
-这样您就可以在SSH环境和手机上顺利使用MCP反馈通道了！ 

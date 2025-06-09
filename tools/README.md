@@ -30,11 +30,30 @@
   - 生成更新建议报告
 
 ### 🧪 测试和调试工具
+- `run_integrated_test.py` - **集成测试脚本** (推荐)
+  - 合并了原有的反馈测试和MCP转换测试功能
+  - 支持多种测试模式：`feedback`、`mcp_conversion`、`all`
+  - 提供命令行参数控制测试行为
 - `test_*.py` - 各种功能测试脚本
 - `debug_*.py` - 调试和诊断脚本
 - `check_*.py` - 检查和验证脚本
 
 ## 🚀 使用方法
+
+### 运行集成测试 (推荐)
+```bash
+# 基础反馈收集测试
+python tools/run_integrated_test.py --mode feedback
+
+# MCP转换流程测试
+python tools/run_integrated_test.py --mode mcp_conversion
+
+# 运行所有集成测试
+python tools/run_integrated_test.py --mode all
+
+# 非调试模式运行
+python tools/run_integrated_test.py --mode feedback --no-debug
+```
 
 ### 运行安全测试
 ```bash

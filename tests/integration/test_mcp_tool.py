@@ -6,11 +6,7 @@
 import sys
 import os
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+# 移除src目录路径添加
 
 def simulate_mcp_tool_call():
     """模拟MCP工具调用"""
@@ -18,7 +14,7 @@ def simulate_mcp_tool_call():
         print("模拟MCP工具调用...")
         
         # 导入MCP服务器模块
-        from mcp_feedback_pipe.server import collect_feedback
+        from backend.server import collect_feedback
         print("✓ collect_feedback函数导入成功")
         
         # 调用collect_feedback函数
@@ -50,4 +46,4 @@ def simulate_mcp_tool_call():
 
 if __name__ == "__main__":
     success = simulate_mcp_tool_call()
-    print(f"测试结果: {'成功' if success else '失败'}") 
+    print(f"测试结果: {'成功' if success else '失败'}")

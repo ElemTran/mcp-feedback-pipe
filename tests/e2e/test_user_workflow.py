@@ -8,15 +8,14 @@ import time
 import threading
 from unittest.mock import patch, MagicMock
 
-from mcp_feedback_pipe.server_manager import ServerManager
-from mcp_feedback_pipe import collect_feedback, pick_image, server_manager
-
+from backend.server_manager import ServerManager
+from backend import collect_feedback, pick_image, server_manager
 
 class TestCompleteUserWorkflow:
     """完整用户工作流程测试"""
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
-    @patch('mcp_feedback_pipe.server_manager.threading.Thread')
+    @patch('backend.server_manager.webbrowser.open')
+    @patch('backend.server_manager.threading.Thread')
     def test_collect_feedback_full_workflow(self, mock_thread, mock_webbrowser):
         """测试完整的反馈收集工作流程"""
         
@@ -42,8 +41,8 @@ class TestCompleteUserWorkflow:
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
         
-        with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-            with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+            with patch('backend.server_manager.time.sleep'):
                 # 启动模拟用户反馈的线程
                 user_thread = threading.Thread(target=simulate_user_feedback)
                 user_thread.start()
@@ -63,8 +62,8 @@ class TestCompleteUserWorkflow:
                     # 清理server_manager状态
                     server_manager.stop_server()
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
-    @patch('mcp_feedback_pipe.server_manager.threading.Thread')
+    @patch('backend.server_manager.webbrowser.open')
+    @patch('backend.server_manager.threading.Thread')
     def test_pick_image_workflow(self, mock_thread, mock_webbrowser):
         """测试图片选择工作流程"""
         
@@ -87,8 +86,8 @@ class TestCompleteUserWorkflow:
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
         
-        with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-            with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+            with patch('backend.server_manager.time.sleep'):
                 user_thread = threading.Thread(target=simulate_image_selection)
                 user_thread.start()
                 
@@ -105,10 +104,10 @@ class TestCompleteUserWorkflow:
     
     def test_timeout_scenario(self):
         """测试超时场景"""
-        with patch('mcp_feedback_pipe.server_manager.webbrowser.open'):
-            with patch('mcp_feedback_pipe.server_manager.threading.Thread'):
-                with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-                    with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.webbrowser.open'):
+            with patch('backend.server_manager.threading.Thread'):
+                with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+                    with patch('backend.server_manager.time.sleep'):
                         
                         # 不提供任何用户反馈，应该超时
                         with pytest.raises(Exception, match="操作超时"):
@@ -117,8 +116,8 @@ class TestCompleteUserWorkflow:
                                 timeout_seconds=1
                             )
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
-    @patch('mcp_feedback_pipe.server_manager.threading.Thread')
+    @patch('backend.server_manager.webbrowser.open')
+    @patch('backend.server_manager.threading.Thread')
     def test_user_cancellation(self, mock_thread, mock_webbrowser):
         """测试用户取消操作"""
         
@@ -136,8 +135,8 @@ class TestCompleteUserWorkflow:
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
         
-        with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-            with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+            with patch('backend.server_manager.time.sleep'):
                 user_thread = threading.Thread(target=simulate_user_cancellation)
                 user_thread.start()
                 
@@ -152,18 +151,17 @@ class TestCompleteUserWorkflow:
                     user_thread.join()
                     server_manager.stop_server()
 
-
 class TestErrorHandling:
     """错误处理测试"""
     
     def test_missing_flask_dependency(self):
         """测试Flask依赖缺失的情况"""
         # 这个测试需要特殊处理，因为Flask已经导入了
-        with patch('mcp_feedback_pipe.app.Flask', side_effect=ImportError("Flask not found")):
+        with patch('backend.app.Flask', side_effect=ImportError("Flask not found")):
             with pytest.raises(Exception, match="依赖缺失"):
                 collect_feedback("测试", 5)
     
-    @patch('mcp_feedback_pipe.server_manager.ServerManager.start_server', 
+    @patch('backend.server_manager.ServerManager.start_server', 
            side_effect=Exception("服务器启动失败"))
     def test_server_startup_failure(self, mock_start):
         """测试服务器启动失败"""
@@ -172,21 +170,20 @@ class TestErrorHandling:
     
     def test_invalid_timeout(self):
         """测试无效的超时参数"""
-        with patch('mcp_feedback_pipe.server_manager.webbrowser.open'):
-            with patch('mcp_feedback_pipe.server_manager.threading.Thread'):
-                with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-                    with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.webbrowser.open'):
+            with patch('backend.server_manager.threading.Thread'):
+                with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+                    with patch('backend.server_manager.time.sleep'):
                         
                         # 超时时间为0应该立即超时
                         with pytest.raises(Exception, match="操作超时"):
                             collect_feedback("测试", 0)
 
-
 class TestResourceManagement:
     """资源管理测试"""
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
-    @patch('mcp_feedback_pipe.server_manager.threading.Thread')
+    @patch('backend.server_manager.webbrowser.open')
+    @patch('backend.server_manager.threading.Thread')
     def test_proper_cleanup_after_success(self, mock_thread, mock_webbrowser):
         """测试成功完成后的资源清理"""
         
@@ -204,8 +201,8 @@ class TestResourceManagement:
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
         
-        with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-            with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+            with patch('backend.server_manager.time.sleep'):
                 
                 user_thread = threading.Thread(target=simulate_successful_feedback)
                 user_thread.start()
@@ -221,16 +218,16 @@ class TestResourceManagement:
                     finally:
                         user_thread.join()
     
-    @patch('mcp_feedback_pipe.server_manager.webbrowser.open')
-    @patch('mcp_feedback_pipe.server_manager.threading.Thread')
+    @patch('backend.server_manager.webbrowser.open')
+    @patch('backend.server_manager.threading.Thread')
     def test_cleanup_after_exception(self, mock_thread, mock_webbrowser):
         """测试异常情况下的资源清理"""
         
         mock_thread_instance = MagicMock()
         mock_thread.return_value = mock_thread_instance
         
-        with patch('mcp_feedback_pipe.server_manager.ServerManager.find_free_port', return_value=8080):
-            with patch('mcp_feedback_pipe.server_manager.time.sleep'):
+        with patch('backend.server_manager.ServerManager.find_free_port', return_value=8080):
+            with patch('backend.server_manager.time.sleep'):
                 
                 # 模拟异常情况
                 with patch.object(server_manager, 'wait_for_feedback', 
@@ -241,4 +238,4 @@ class TestResourceManagement:
                             collect_feedback("测试", 5)
                         
                         # 即使发生异常，也应该调用清理方法
-                        mock_stop.assert_called_once() 
+                        mock_stop.assert_called_once()

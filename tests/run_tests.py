@@ -9,7 +9,6 @@ import subprocess
 import argparse
 from pathlib import Path
 
-
 def run_command(cmd, description):
     """运行命令并处理结果"""
     print(f"\n{'='*60}")
@@ -35,10 +34,9 @@ def run_command(cmd, description):
         print(f"❌ {description} - 执行失败: {e}")
         return False
 
-
 def main():
     parser = argparse.ArgumentParser(description="MCP反馈通道测试运行器")
-    parser.add_argument('--type', choices=['unit', 'integration', 'e2e', 'all'], 
+    parser.add_argument('--type', choices=['unit', 'integration', 'e2e', 'project_validation', 'all'],
                        default='all', help='测试类型')
     parser.add_argument('--coverage', action='store_true', help='生成覆盖率报告')
     parser.add_argument('--parallel', action='store_true', help='并行运行测试')
@@ -54,7 +52,7 @@ def main():
         pytest_cmd += " -v"
     
     if args.coverage:
-        pytest_cmd += " --cov=src/mcp_feedback_pipe --cov-report=term-missing --cov-report=html"
+        pytest_cmd += " --cov=backend --cov-report=term-missing --cov-report=html"
     
     if args.parallel:
         pytest_cmd += " -n auto"
@@ -68,11 +66,14 @@ def main():
         test_commands.append((f"{pytest_cmd} tests/integration/", "集成测试"))
     elif args.type == 'e2e':
         test_commands.append((f"{pytest_cmd} tests/e2e/", "端到端测试"))
+    elif args.type == 'project_validation':
+        test_commands.append((f"{pytest_cmd} tests/project_validation/", "项目验证测试"))
     else:  # all
         test_commands.extend([
             (f"{pytest_cmd} tests/unit/", "单元测试"),
             (f"{pytest_cmd} tests/integration/", "集成测试"),
-            (f"{pytest_cmd} tests/e2e/", "端到端测试")
+            (f"{pytest_cmd} tests/e2e/", "端到端测试"),
+            (f"{pytest_cmd} tests/project_validation/", "项目验证测试")
         ])
     
     # 执行测试
@@ -99,6 +100,5 @@ def main():
         print("❌ 部分测试失败")
         sys.exit(1)
 
-
 if __name__ == "__main__":
-    main() 
+    main()

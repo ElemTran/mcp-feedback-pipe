@@ -9,8 +9,7 @@ import threading
 import time
 from unittest.mock import MagicMock, patch
 
-from mcp_feedback_pipe.feedback_handler import FeedbackHandler
-
+from backend.feedback_handler import FeedbackHandler
 
 class TestFeedbackHandler:
     """测试FeedbackHandler类"""
@@ -87,7 +86,6 @@ class TestFeedbackHandler:
         # 验证队列为空
         assert handler.result_queue.empty()
 
-
 class TestProcessFeedbackToMcp:
     """测试process_feedback_to_mcp方法"""
     
@@ -106,7 +104,7 @@ class TestProcessFeedbackToMcp:
         with pytest.raises(Exception, match="用户取消"):
             handler.process_feedback_to_mcp(failed_result)
     
-    @patch('mcp_feedback_pipe.feedback_handler.TextContent')
+    @patch('backend.feedback_handler.TextContent')
     def test_process_feedback_text_only(self, mock_text_content):
         """测试仅文字反馈"""
         handler = FeedbackHandler()
@@ -127,7 +125,7 @@ class TestProcessFeedbackToMcp:
         assert feedback_items[0] == mock_text_instance
         mock_text_content.assert_called_once()
     
-    @patch('mcp_feedback_pipe.feedback_handler.MCPImage')
+    @patch('backend.feedback_handler.MCPImage')
     def test_process_feedback_images_only(self, mock_mcp_image):
         """测试仅图片反馈"""
         handler = FeedbackHandler()
@@ -151,8 +149,8 @@ class TestProcessFeedbackToMcp:
         mock_mcp_image.assert_any_call(data=b'image1_data', format='png')
         mock_mcp_image.assert_any_call(data=b'image2_data', format='png')
     
-    @patch('mcp_feedback_pipe.feedback_handler.TextContent')
-    @patch('mcp_feedback_pipe.feedback_handler.MCPImage')
+    @patch('backend.feedback_handler.TextContent')
+    @patch('backend.feedback_handler.MCPImage')
     def test_process_feedback_complete(self, mock_mcp_image, mock_text_content):
         """测试完整反馈（文字+图片）"""
         handler = FeedbackHandler()
@@ -174,4 +172,4 @@ class TestProcessFeedbackToMcp:
         
         assert len(feedback_items) == 2
         assert feedback_items[0] == mock_text_instance
-        assert feedback_items[1] == mock_image_instance 
+        assert feedback_items[1] == mock_image_instance

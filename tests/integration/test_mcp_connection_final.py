@@ -9,11 +9,7 @@ import os
 import time
 import threading
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+# 移除src目录路径添加
 
 def test_mcp_tool_simulation():
     """模拟MCP工具调用流程"""
@@ -21,7 +17,7 @@ def test_mcp_tool_simulation():
     
     try:
         # 导入MCP工具函数
-        from mcp_feedback_pipe.server import collect_feedback
+        from backend.server import collect_feedback
         
         print("1. 调用collect_feedback工具...")
         
@@ -70,4 +66,4 @@ def test_mcp_tool_simulation():
         traceback.print_exc()
 
 if __name__ == "__main__":
-    test_mcp_tool_simulation() 
+    test_mcp_tool_simulation()

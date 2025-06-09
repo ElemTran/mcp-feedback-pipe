@@ -8,18 +8,14 @@ import sys
 import os
 import time
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, '..', '..', 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+# 移除src目录路径添加
 
 def test_timeout_display():
     """测试超时时间显示功能"""
     print("🧪 测试超时时间显示功能...")
     
     try:
-        from mcp_feedback_pipe.server import collect_feedback
+        from backend.server import collect_feedback
         
         print("1. 测试短超时时间（30秒）...")
         result = collect_feedback(
@@ -49,7 +45,7 @@ def test_timeout_integration():
     print("\n🧪 测试超时功能集成...")
     
     try:
-        from mcp_feedback_pipe.server_manager import ServerManager
+        from backend.server_manager import ServerManager
         
         # 创建服务器管理器
         server_manager = ServerManager()
@@ -109,4 +105,4 @@ def main():
 
 if __name__ == "__main__":
     success = main()
-    sys.exit(0 if success else 1) 
+    sys.exit(0 if success else 1)

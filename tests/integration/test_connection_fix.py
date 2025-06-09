@@ -8,13 +8,9 @@ import sys
 import os
 import time
 
-# 添加src目录到路径
-current_dir = os.path.dirname(os.path.abspath(__file__))
-src_dir = os.path.join(current_dir, 'src')
-if src_dir not in sys.path:
-    sys.path.insert(0, src_dir)
+# 移除src目录路径添加
 
-from mcp_feedback_pipe.server_manager import ServerManager
+from backend.server_manager import ServerManager
 
 def test_connection_stability():
     """测试连接稳定性"""
@@ -66,4 +62,4 @@ def test_connection_stability():
         print("✅ 清理完成")
 
 if __name__ == "__main__":
-    test_connection_stability() 
+    test_connection_stability()

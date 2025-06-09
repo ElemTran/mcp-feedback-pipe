@@ -84,7 +84,7 @@ def update_html_template(sri_hashes: Dict[str, str]) -> None:
     """更新HTML模板中的SRI哈希值"""
     template_path = os.path.join(
         os.path.dirname(os.path.dirname(__file__)),
-        'src', 'mcp_feedback_pipe', 'templates', 'feedback.html'
+        'frontend', 'templates', 'feedback.html'
     )
     
     if not os.path.exists(template_path):
@@ -201,4 +201,4 @@ def main():
     return 0
 
 if __name__ == "__main__":
-    exit(main()) 
+    exit(main())
