@@ -66,25 +66,49 @@ class ServerManager:
         """启动Web服务器 - TURBO模式（终极性能优化）"""
         # 性能监控: 服务器启动总时间开始计时
         server_startup_start_time = time.perf_counter()
+        
+        # 添加详细的调试日志
+        logger.info("[SERVER_MANAGER_DEBUG] start_server method called")
+        logger.info(f"[SERVER_MANAGER_DEBUG] Parameters - work_summary length: {len(work_summary)}, timeout_seconds: {timeout_seconds}, suggest length: {len(suggest)}, debug: {debug}, use_reloader: {use_reloader}")
+        
         logger.info("🚀 开始TURBO服务器启动流程")
 
         # 创建应用实例 - 使用关键字参数确保正确传递
+        logger.info("[SERVER_MANAGER_DEBUG] About to create FeedbackApp instance...")
         app_creation_start_time = time.perf_counter()
-        self.app = FeedbackApp(
-            feedback_handler=self.feedback_handler,
-            work_summary=work_summary,
-            suggest_json=suggest,
-            timeout_seconds=timeout_seconds,
-        )
-        app_creation_duration = time.perf_counter() - app_creation_start_time
-        logger.info(f"性能监控: 应用实例创建耗时 {app_creation_duration:.3f} 秒")
+        
+        try:
+            self.app = FeedbackApp(
+                feedback_handler=self.feedback_handler,
+                work_summary=work_summary,
+                suggest_json=suggest,
+                timeout_seconds=timeout_seconds,
+            )
+            app_creation_duration = time.perf_counter() - app_creation_start_time
+            logger.info(f"[SERVER_MANAGER_DEBUG] FeedbackApp instance created successfully in {app_creation_duration:.3f} seconds")
+            logger.info(f"性能监控: 应用实例创建耗时 {app_creation_duration:.3f} 秒")
+        except Exception as e:
+            app_creation_duration = time.perf_counter() - app_creation_start_time
+            logger.error(f"[SERVER_MANAGER_DEBUG] Failed to create FeedbackApp instance after {app_creation_duration:.3f} seconds: {e}")
+            raise
 
+        logger.info("[SERVER_MANAGER_DEBUG] About to allocate port...")
         port_allocation_start_time = time.perf_counter()
+        
         # 获取首选Web端口
         preferred_port_to_use = getattr(self._config, 'preferred_web_port', None)
-        self.current_port = find_free_port(preferred_port=preferred_port_to_use)
-        port_allocation_duration = time.perf_counter() - port_allocation_start_time
-        logger.info(f"性能监控: 端口分配耗时 {port_allocation_duration:.3f} 秒")
+        logger.info(f"[SERVER_MANAGER_DEBUG] Preferred port from config: {preferred_port_to_use}")
+        logger.info(f"[SERVER_MANAGER_DEBUG] About to call find_free_port with preferred_port: {preferred_port_to_use}")
+        
+        try:
+            self.current_port = find_free_port(preferred_port=preferred_port_to_use)
+            port_allocation_duration = time.perf_counter() - port_allocation_start_time
+            logger.info(f"[SERVER_MANAGER_DEBUG] find_free_port returned: {self.current_port} in {port_allocation_duration:.3f} seconds")
+            logger.info(f"性能监控: 端口分配耗时 {port_allocation_duration:.3f} 秒")
+        except Exception as e:
+            port_allocation_duration = time.perf_counter() - port_allocation_start_time
+            logger.error(f"[SERVER_MANAGER_DEBUG] find_free_port failed after {port_allocation_duration:.3f} seconds: {e}")
+            raise
 
         # 启动服务器线程
         def run_server() -> None:
@@ -105,18 +129,39 @@ class ServerManager:
             except Exception as e:
                 logger.error(f"服务器启动失败 - 未知错误: {e}")
 
+        logger.info("[SERVER_MANAGER_DEBUG] About to create and start server thread...")
         thread_creation_start_time = time.perf_counter()
-        self.server_thread = threading.Thread(target=run_server, daemon=True)
-        self.server_thread.start()
-        thread_creation_duration = time.perf_counter() - thread_creation_start_time
-        logger.info(f"性能监控: 服务器线程创建与启动耗时 {thread_creation_duration:.3f} 秒")
+        
+        try:
+            self.server_thread = threading.Thread(target=run_server, daemon=True)
+            logger.info(f"[SERVER_MANAGER_DEBUG] Server thread created successfully")
+            
+            self.server_thread.start()
+            thread_creation_duration = time.perf_counter() - thread_creation_start_time
+            logger.info(f"[SERVER_MANAGER_DEBUG] Server thread started successfully in {thread_creation_duration:.3f} seconds")
+            logger.info(f"性能监控: 服务器线程创建与启动耗时 {thread_creation_duration:.3f} 秒")
+        except Exception as e:
+            thread_creation_duration = time.perf_counter() - thread_creation_start_time
+            logger.error(f"[SERVER_MANAGER_DEBUG] Failed to create/start server thread after {thread_creation_duration:.3f} seconds: {e}")
+            raise
 
         # TURBO模式：跳过所有检查，信任启动，绝对最速
         parallel_start_time = time.perf_counter()
         logger.info("⚡ TURBO模式启动 - 跳过检查，绝对最速")
         
         # TURBO模式：跳过检查的最小启动流程
-        self._wait_for_server_ready()
+        logger.info("[SERVER_MANAGER_DEBUG] About to call _wait_for_server_ready...")
+        wait_ready_start = time.perf_counter()
+        
+        try:
+            server_ready_result = self._wait_for_server_ready()
+            wait_ready_duration = time.perf_counter() - wait_ready_start
+            logger.info(f"[SERVER_MANAGER_DEBUG] _wait_for_server_ready completed in {wait_ready_duration:.3f} seconds")
+            logger.info(f"[SERVER_MANAGER_DEBUG] _wait_for_server_ready returned: {server_ready_result}")
+        except Exception as e:
+            wait_ready_duration = time.perf_counter() - wait_ready_start
+            logger.error(f"[SERVER_MANAGER_DEBUG] _wait_for_server_ready failed after {wait_ready_duration:.3f} seconds: {e}")
+            raise
         
         # 异步启动浏览器，不等待结果
         try:
@@ -136,52 +181,89 @@ class ServerManager:
         # 性能监控: 服务器启动总时间结束计时
         total_startup_duration = time.perf_counter() - server_startup_start_time
         logger.info(f"性能监控: 服务器启动总耗时 {total_startup_duration:.3f} 秒")
+        
+        logger.info(f"[SERVER_MANAGER_DEBUG] start_server method completed successfully")
+        logger.info(f"[SERVER_MANAGER_DEBUG] Returning port: {self.current_port}")
 
         return self.current_port
 
     def _wait_for_server_ready(self, skip_check: bool = False) -> bool:
         """等待服务器就绪 - 增加了基本的端口检查"""
+        logger.info(f"[WAIT_SERVER_READY_DEBUG] _wait_for_server_ready method called with skip_check: {skip_check}")
+        
         if skip_check:  # Still allow explicit skipping if ever needed
+            logger.info("[WAIT_SERVER_READY_DEBUG] 服务器就绪检查被跳过 (skip_check=True)")
             logger.info("服务器就绪检查被跳过 (skip_check=True)")
             time.sleep(0.01)
             return True
 
         if not self.current_port:
+            logger.error("[WAIT_SERVER_READY_DEBUG] 无法检查服务器就绪状态：当前端口未设置。")
             logger.error("无法检查服务器就绪状态：当前端口未设置。")
             return False
 
+        logger.info(f"[WAIT_SERVER_READY_DEBUG] 开始检查服务器端口 {self.current_port} 是否就绪...")
+        logger.info(f"[WAIT_SERVER_READY_DEBUG] Configuration - max_attempts: {self.server_ready_max_attempts}, check_interval: {self.server_ready_check_interval}")
         logger.info(f"开始检查服务器端口 {self.current_port} 是否就绪...")
+        logger.info(f"[WAIT_SERVER_READY_DEBUG] About to enter attempt loop...")
+        
         for attempt in range(self.server_ready_max_attempts):
+            logger.info(f"[WAIT_SERVER_READY_DEBUG] Attempt {attempt + 1}/{self.server_ready_max_attempts} - trying socket connection to 127.0.0.1:{self.current_port}")
             try:
                 # 尝试创建一个到服务器端口的套接字连接
                 import socket
+                connection_start = time.time()
+                logger.debug(f"[WAIT_SERVER_READY_DEBUG] Creating socket connection to 127.0.0.1:{self.current_port} with 0.5s timeout...")
+                
                 with socket.create_connection(("127.0.0.1", self.current_port), timeout=0.5):
+                    connection_duration = time.time() - connection_start
+                    logger.info(f"[WAIT_SERVER_READY_DEBUG] 服务器端口 {self.current_port} 已成功连接 (尝试 {attempt + 1})，连接耗时 {connection_duration:.3f}秒")
                     logger.info(f"服务器端口 {self.current_port} 已成功连接 (尝试 {attempt + 1})。")
                     return True
+                    
             except (socket.error, socket.timeout) as e:
+                connection_duration = time.time() - connection_start
+                logger.info(f"[WAIT_SERVER_READY_DEBUG] Socket connection failed on attempt {attempt + 1}, duration: {connection_duration:.3f}s, error: {type(e).__name__}: {e}")
                 logger.debug(
                     f"等待服务器端口 {self.current_port} 就绪... "
                     f"(尝试 {attempt + 1}/{self.server_ready_max_attempts}) - 错误: {e}"
                 )
+                
                 if attempt < self.server_ready_max_attempts - 1:
+                    logger.debug(f"[WAIT_SERVER_READY_DEBUG] Sleeping {self.server_ready_check_interval}s before next attempt...")
                     time.sleep(self.server_ready_check_interval)
                 else:  # Last attempt
+                    logger.error(f"[WAIT_SERVER_READY_DEBUG] All {self.server_ready_max_attempts} attempts failed")
                     logger.error(
                         f"服务器端口 {self.current_port} 在 "
                         f"{self.server_ready_max_attempts} 次尝试后仍未就绪。"
                     )
                     # Fallback: wait a bit longer as a last resort, then assume failure.
                     # This matches original fallback logic if requests was None.
+                    logger.info(f"[WAIT_SERVER_READY_DEBUG] 执行最后的回退等待 {self.server_ready_fallback_wait} 秒...")
                     logger.info(f"执行最后的等待 {self.server_ready_fallback_wait} 秒...")
+                    
+                    fallback_start = time.time()
                     time.sleep(self.server_ready_fallback_wait)
+                    fallback_duration = time.time() - fallback_start
+                    logger.info(f"[WAIT_SERVER_READY_DEBUG] 回退等待完成，实际耗时 {fallback_duration:.3f}秒")
+                    
                     # Re-check one last time after fallback wait
+                    logger.info(f"[WAIT_SERVER_READY_DEBUG] 执行回退等待后的最终连接尝试...")
                     try:
+                        final_connection_start = time.time()
                         with socket.create_connection(("127.0.0.1", self.current_port), timeout=1.0):
+                            final_connection_duration = time.time() - final_connection_start
+                            logger.info(f"[WAIT_SERVER_READY_DEBUG] 服务器端口 {self.current_port} 在回退等待后成功连接，连接耗时 {final_connection_duration:.3f}秒")
                             logger.info(f"服务器端口 {self.current_port} 在回退等待后成功连接。")
                             return True
-                    except (socket.error, socket.timeout):
+                    except (socket.error, socket.timeout) as final_e:
+                        final_connection_duration = time.time() - final_connection_start
+                        logger.error(f"[WAIT_SERVER_READY_DEBUG] 回退等待后的最终连接尝试失败，耗时 {final_connection_duration:.3f}秒, 错误: {type(final_e).__name__}: {final_e}")
                         logger.error(f"服务器端口 {self.current_port} 在回退等待后仍然无法连接。")
                         return False
+        
+        logger.error(f"[WAIT_SERVER_READY_DEBUG] _wait_for_server_ready returning False - should not reach this point")
         return False  # Should not be reached if logic is correct
 
     def wait_for_feedback(
@@ -198,38 +280,72 @@ class ServerManager:
         Returns:
             Optional[dict]: 前端提交的结果或超时结果
         """
+        logger.info(f"[WAIT_FEEDBACK_DEBUG] wait_for_feedback method called with timeout_seconds: {timeout_seconds}")
+        
         # 设置超时时间
         if timeout_seconds is None:
             timeout_seconds = self._config.default_timeout
+            logger.info(f"[WAIT_FEEDBACK_DEBUG] Using default timeout from config: {timeout_seconds}")
+        else:
+            logger.info(f"[WAIT_FEEDBACK_DEBUG] Using provided timeout_seconds: {timeout_seconds}")
         
         # 阶段1：60秒宽容期 - 等待WebSocket连接
         grace_period = 60
+        logger.info(f"[WAIT_FEEDBACK_DEBUG] 开始等待反馈：{grace_period}秒宽容期，总超时 {timeout_seconds} 秒")
         logger.info(f"开始等待反馈：{grace_period}秒宽容期，总超时 {timeout_seconds} 秒")
         
+        logger.info(f"[WAIT_FEEDBACK_DEBUG] About to call _wait_for_websocket_connection with grace_period: {grace_period}")
+        websocket_wait_start = time.time()
+        
         if not self._wait_for_websocket_connection(grace_period):
+            websocket_wait_duration = time.time() - websocket_wait_start
+            logger.warning(f"[WAIT_FEEDBACK_DEBUG] _wait_for_websocket_connection failed after {websocket_wait_duration:.3f} seconds")
+            logger.warning(f"[WAIT_FEEDBACK_DEBUG] Returning connection_timeout result")
             return self._create_timeout_result("connection_timeout")
         
+        websocket_wait_duration = time.time() - websocket_wait_start
+        logger.info(f"[WAIT_FEEDBACK_DEBUG] _wait_for_websocket_connection succeeded in {websocket_wait_duration:.3f} seconds")
+        
         # 阶段2：连接依赖模式 - 纯粹等待结果
+        logger.info("[WAIT_FEEDBACK_DEBUG] WebSocket连接已建立，进入连接依赖模式")
         logger.info("WebSocket连接已建立，进入连接依赖模式")
         start_time = time.time()
+        logger.info(f"[WAIT_FEEDBACK_DEBUG] Starting feedback polling loop at {time.strftime('%Y-%m-%d %H:%M:%S')}")
         
+        loop_iteration = 0
         while True:
+            loop_iteration += 1
+            logger.debug(f"[WAIT_FEEDBACK_DEBUG] Loop iteration {loop_iteration} at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+            logger.debug(f"[DEBUG wait_for_feedback] {time.strftime('%Y-%m-%d %H:%M:%S')} - has_active_clients: {self.app.has_active_clients()}")
             current_time = time.time()
             elapsed_time = current_time - start_time
             
             # 检查总超时
             if elapsed_time >= timeout_seconds:
+                logger.warning(f"[WAIT_FEEDBACK_DEBUG] 总超时触发，已等待 {elapsed_time:.1f} 秒")
                 logger.warning(f"总超时触发，已等待 {elapsed_time:.1f} 秒")
                 return self._create_timeout_result("total_timeout")
             
             # 尝试获取结果
+            logger.debug(f"[WAIT_FEEDBACK_DEBUG] Attempting to get result from feedback_handler (timeout=1)...")
+            get_result_start = time.time()
             result = self.feedback_handler.get_result(timeout=1)
+            get_result_duration = time.time() - get_result_start
+            logger.debug(f"[WAIT_FEEDBACK_DEBUG] feedback_handler.get_result took {get_result_duration:.3f}s, result: {result is not None}")
+            
             if result is not None:
+                logger.info(f"[WAIT_FEEDBACK_DEBUG] 收到反馈结果，总等待时间 {elapsed_time:.1f} 秒")
                 logger.info(f"收到反馈结果，总等待时间 {elapsed_time:.1f} 秒")
+                logger.info(f"[WAIT_FEEDBACK_DEBUG] Result type: {type(result)}, keys: {list(result.keys()) if isinstance(result, dict) else 'Not a dict'}")
                 return result
             
             # 检查WebSocket连接状态
-            if not self.app.has_active_clients():
+            has_active_clients = self.app.has_active_clients() if self.app else False
+            logger.debug(f"[WAIT_FEEDBACK_DEBUG] has_active_clients: {has_active_clients}")
+            
+            if not has_active_clients:
+                logger.debug(f"[DEBUG wait_for_feedback] {time.strftime('%Y-%m-%d %H:%M:%S')} - active_clients: {self.app.active_clients if self.app else 'No app'}")
+                logger.info(f"[WAIT_FEEDBACK_DEBUG] WebSocket连接已断开")
                 logger.info("WebSocket连接已断开")
                 return self._create_timeout_result("websocket_disconnected")
 

@@ -11,6 +11,13 @@ import os
 import sys
 from typing import List
 
+# 确保项目根目录在模块搜索路径中
+import pathlib
+_current_file = pathlib.Path(__file__).resolve()
+_project_root = _current_file.parent.parent  # backend/server.py -> project_root
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.types import Image as MCPImage
 
@@ -706,7 +713,17 @@ def main():
             _start_web_mode()
         else:
             # 标准MCP模式
-            mcp.run()
+            try:
+                mcp.run()
+            except Exception as e:
+                import traceback
+                print("!!! An exception occurred during mcp.run() !!!")
+                print(f"Exception Type: {type(e).__name__}")
+                print(f"Exception Message: {str(e)}")
+                print("Traceback:")
+                print(traceback.format_exc())
+                # 重新抛出异常，以便上层调用者（如果有）能感知到
+                raise
     except Exception as e_mcp_run:
         # 在这里可以添加更合适的日志记录方式，例如使用logging模块
         print(f"Error during FastMCP server execution: {e_mcp_run}")

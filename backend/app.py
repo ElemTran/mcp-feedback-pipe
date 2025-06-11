@@ -155,8 +155,10 @@ class FeedbackApp:
         def handle_heartbeat(data):
             """心跳事件"""
             client_id = self._get_client_id()
+            log_message(f"[WebSocket] 心跳接收: client_id={client_id}, 时间={time.strftime('%Y-%m-%d %H:%M:%S')}")
             if client_id in self.active_clients:
                 self.active_clients[client_id]['last_heartbeat'] = time.time()
+                log_message(f"[WebSocket] 更新 last_heartbeat: {client_id} -> {self.active_clients[client_id]['last_heartbeat']}")
                 
                 # 发送心跳响应
                 emit('heartbeat_response', {
@@ -246,10 +248,17 @@ class FeedbackApp:
     def has_active_clients(self) -> bool:
         """检查是否有活跃客户端"""
         current_time = time.time()
-        for client_info in self.active_clients.values():
-            if current_time - client_info['last_heartbeat'] <= self.client_timeout:
-                return True
-        return False
+        active = False
+        for client_id, client_info in self.active_clients.items():
+            diff = current_time - client_info['last_heartbeat']
+            log_message(f"[WebSocket] has_active_clients check: client_id={client_id}, now={current_time}, last_heartbeat={client_info['last_heartbeat']}, timeout={self.client_timeout}, diff={diff}")
+            if diff <= self.client_timeout:
+                log_message(f"[WebSocket] has_active_clients -> True")
+                active = True
+                break
+        if not active:
+            log_message(f"[WebSocket] has_active_clients -> False")
+        return active
 
     def get_active_client_count(self) -> int:
         """获取活跃客户端数量"""

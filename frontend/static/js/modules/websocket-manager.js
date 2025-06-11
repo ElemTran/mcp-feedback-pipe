@@ -167,6 +167,7 @@ export class WebSocketManager {
         
         this.heartbeatTimer = setInterval(() => {
             if (this.isConnected && this.socket) {
+                console.log(`[WebSocket] 发送心跳: client_id=${this.clientId}, 时间=${new Date().toISOString()}`);
                 this.socket.emit('heartbeat', {
                     client_id: this.clientId,
                     timestamp: Date.now(),

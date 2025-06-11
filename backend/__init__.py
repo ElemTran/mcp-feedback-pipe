@@ -10,6 +10,7 @@ MCP反馈通道 v3.0 - Web版本
 
 import logging
 import sys
+import time
 
 __author__ = "MCP Feedback Collector Team"
 __description__ = "现代化MCP反馈通道 - Web版本，完美支持SSH环境"
@@ -36,15 +37,15 @@ def setup_logging(level=logging.INFO):
 # 初始化日志
 logger = setup_logging()
 
-# 导入主要功能 - 将导入移到此处以避免循环导入
-try:
-    from backend.server import mcp, collect_feedback, pick_image, get_image_info_tool
-except ImportError:
-    # TODO(dev-team): 处理循环导入问题 - 在 2025 年 7 月前重构
-    mcp = None
-    collect_feedback = None
-    pick_image = None
-    get_image_info_tool = None
+# 注意：为了避免 `python -m backend.server` 时的 RuntimeWarning，
+# 我们不在包初始化时导入 backend.server 模块。
+#
+# 如果需要使用这些功能，请直接导入：
+# from backend.server import mcp, collect_feedback, pick_image, get_image_info_tool
+#
+# 或者导入整个模块：
+# from backend import server
+# server.collect_feedback(...)
 
-# 导出的公共API
-__all__ = ["mcp", "collect_feedback", "pick_image", "get_image_info_tool"]
+# 导出的公共API - 仅在需要时导入
+__all__ = []
