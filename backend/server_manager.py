@@ -6,7 +6,7 @@ Web服务器管理模块
 import logging
 import threading
 import time
-from typing import Optional, Dict, Any, Union, TYPE_CHECKING
+from typing import Optional, Dict, Any, Union
 
 try:
     import requests
@@ -75,7 +75,6 @@ class ServerManager:
             work_summary=work_summary,
             suggest_json=suggest,
             timeout_seconds=timeout_seconds,
-            server_manager_instance=self,
         )
         app_creation_duration = time.perf_counter() - app_creation_start_time
         logger.info(f"性能监控: 应用实例创建耗时 {app_creation_duration:.3f} 秒")
@@ -98,20 +97,12 @@ class ServerManager:
                 )
                 # If app.run() returns, it means the server was shut down gracefully (e.g., by a signal)
                 # Log this normal shutdown.
-                with open("../debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-                    log_file.write(f">>> BACKEND ServerManager: run_server() - Flask app.run() on port {self.current_port} exited normally.\n")
                 logger.info(f"Flask server on port {self.current_port} shut down gracefully.")
             except OSError as e:
-                with open("../debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-                    log_file.write(f">>> BACKEND ServerManager: run_server() - OSError on port {self.current_port}: {e}\n")
                 logger.error(f"服务器启动失败 - 网络或端口错误: {e}")
             except ImportError as e:
-                with open("../debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-                    log_file.write(f">>> BACKEND ServerManager: run_server() - ImportError on port {self.current_port}: {e}\n")
                 logger.error(f"服务器启动失败 - 缺少依赖模块: {e}")
             except Exception as e:
-                with open("../debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-                    log_file.write(f">>> BACKEND ServerManager: run_server() - Unknown Exception on port {self.current_port}: {e}\n")
                 logger.error(f"服务器启动失败 - 未知错误: {e}")
 
         thread_creation_start_time = time.perf_counter()
@@ -148,9 +139,9 @@ class ServerManager:
 
         return self.current_port
 
-    def _wait_for_server_ready(self, skip_check: bool = False) -> bool: # Changed skip_check default to False
+    def _wait_for_server_ready(self, skip_check: bool = False) -> bool:
         """等待服务器就绪 - 增加了基本的端口检查"""
-        if skip_check: # Still allow explicit skipping if ever needed
+        if skip_check:  # Still allow explicit skipping if ever needed
             logger.info("服务器就绪检查被跳过 (skip_check=True)")
             time.sleep(0.01)
             return True
@@ -164,180 +155,107 @@ class ServerManager:
             try:
                 # 尝试创建一个到服务器端口的套接字连接
                 import socket
-                with socket.create_connection(("127.0.0.1", self.current_port), timeout=0.5) as sock:
+                with socket.create_connection(("127.0.0.1", self.current_port), timeout=0.5):
                     logger.info(f"服务器端口 {self.current_port} 已成功连接 (尝试 {attempt + 1})。")
                     return True
             except (socket.error, socket.timeout) as e:
-                logger.debug(f"等待服务器端口 {self.current_port} 就绪... (尝试 {attempt + 1}/{self.server_ready_max_attempts}) - 错误: {e}")
+                logger.debug(
+                    f"等待服务器端口 {self.current_port} 就绪... "
+                    f"(尝试 {attempt + 1}/{self.server_ready_max_attempts}) - 错误: {e}"
+                )
                 if attempt < self.server_ready_max_attempts - 1:
                     time.sleep(self.server_ready_check_interval)
-                else: # Last attempt
-                    logger.error(f"服务器端口 {self.current_port} 在 {self.server_ready_max_attempts} 次尝试后仍未就绪。")
+                else:  # Last attempt
+                    logger.error(
+                        f"服务器端口 {self.current_port} 在 "
+                        f"{self.server_ready_max_attempts} 次尝试后仍未就绪。"
+                    )
                     # Fallback: wait a bit longer as a last resort, then assume failure.
                     # This matches original fallback logic if requests was None.
                     logger.info(f"执行最后的等待 {self.server_ready_fallback_wait} 秒...")
                     time.sleep(self.server_ready_fallback_wait)
                     # Re-check one last time after fallback wait
                     try:
-                        with socket.create_connection(("127.0.0.1", self.current_port), timeout=1.0) as sock:
+                        with socket.create_connection(("127.0.0.1", self.current_port), timeout=1.0):
                             logger.info(f"服务器端口 {self.current_port} 在回退等待后成功连接。")
                             return True
                     except (socket.error, socket.timeout):
                         logger.error(f"服务器端口 {self.current_port} 在回退等待后仍然无法连接。")
                         return False
-        return False # Should not be reached if logic is correct
+        return False  # Should not be reached if logic is correct
 
     def wait_for_feedback(
         self, timeout_seconds: Optional[int] = None
     ) -> Optional[Dict[str, Any]]:
         """
-        WebSocket增强版：双重超时机制 + 浏览器连接宽限期
-        1. 浏览器连接宽限期（给浏览器时间打开和连接）
-        2. 前端WebSocket心跳检测（优先）
-        3. 后端超时兜底保护（备用）
+        简化版超时控制：宽容期 + 连接依赖模式
+        1. 60秒宽容期：等待WebSocket连接
+        2. 连接依赖模式：持续等待直到WebSocket断开或收到结果
 
         Args:
             timeout_seconds: 最大等待时间（秒），如果未指定则使用默认值
 
         Returns:
-            Optional[dict]: 前端提交的结果或超时/断开时的None
+            Optional[dict]: 前端提交的结果或超时结果
         """
-        # 性能监控: 反馈等待开始计时
-        feedback_wait_start_time = time.perf_counter()
-        
         # 设置超时时间
         if timeout_seconds is None:
             timeout_seconds = self._config.default_timeout
         
-        # 设置浏览器连接宽限期（从配置读取）
-        browser_grace_period = self._config.browser_grace_period
+        # 阶段1：60秒宽容期 - 等待WebSocket连接
+        grace_period = 60
+        logger.info(f"开始等待反馈：{grace_period}秒宽容期，总超时 {timeout_seconds} 秒")
         
-        logger.info(f"后端进入双重超时模式，{browser_grace_period}秒浏览器宽限期 + WebSocket检测 + {timeout_seconds}秒兜底超时")
-
-        last_log_time: float = time.time()
-        total_get_result_calls = 0
-        total_get_result_duration = 0.0
+        if not self._wait_for_websocket_connection(grace_period):
+            return self._create_timeout_result("connection_timeout")
+        
+        # 阶段2：连接依赖模式 - 纯粹等待结果
+        logger.info("WebSocket连接已建立，进入连接依赖模式")
         start_time = time.time()
-
+        
         while True:
             current_time = time.time()
             elapsed_time = current_time - start_time
             
-            # 1. 后端超时兜底检查
+            # 检查总超时
             if elapsed_time >= timeout_seconds:
-                total_wait_duration = time.perf_counter() - feedback_wait_start_time
-                logger.warning(
-                    f"后端超时兜底触发，结束等待。总等待时间 {total_wait_duration:.3f} 秒"
-                )
-                self._handle_backend_timeout()
-                return None
+                logger.warning(f"总超时触发，已等待 {elapsed_time:.1f} 秒")
+                return self._create_timeout_result("total_timeout")
+            
+            # 尝试获取结果
+            result = self.feedback_handler.get_result(timeout=1)
+            if result is not None:
+                logger.info(f"收到反馈结果，总等待时间 {elapsed_time:.1f} 秒")
+                return result
+            
+            # 检查WebSocket连接状态
+            if not self.app.has_active_clients():
+                logger.info("WebSocket连接已断开")
+                return self._create_timeout_result("websocket_disconnected")
 
-            # 2. WebSocket客户端活跃度检查（仅在宽限期后生效）
-            if elapsed_time > browser_grace_period:
-                if self.app and hasattr(self.app, 'has_active_clients'):
-                    if not self.app.has_active_clients():
-                        total_wait_duration = time.perf_counter() - feedback_wait_start_time
-                        logger.warning(
-                            f"WebSocket检测到所有客户端已断开，结束等待。总等待时间 {total_wait_duration:.3f} 秒"
-                        )
-                        return None
-
-            # 3. 传统连接检测（仅在宽限期后生效）
-            if elapsed_time > browser_grace_period:
-                connection_check_start_time = time.perf_counter()
-                if self._check_client_disconnection():
-                    connection_check_duration = (
-                        time.perf_counter() - connection_check_start_time
-                    )
-                    total_wait_duration = time.perf_counter() - feedback_wait_start_time
-                    logger.warning(
-                        f"传统连接检测到客户端断开，结束等待。总等待时间 {total_wait_duration:.3f} 秒，连接检查耗时 {connection_check_duration:.3f} 秒"
-                    )
-                    self._cleanup_on_disconnection()
-                    return None
-
-            # 4. 检查服务器状态
-            if not self._is_server_healthy():
-                total_wait_duration = time.perf_counter() - feedback_wait_start_time
-                logger.warning(
-                    f"服务器状态异常，结束等待。总等待时间 {total_wait_duration:.3f} 秒"
-                )
-                return None
-
-            # 5. 等待结果（设置短轮询间隔避免CPU占用）
-            try:
-                get_result_start_time = time.perf_counter()
-                result = self.feedback_handler.get_result(
-                    timeout=self.feedback_result_timeout
-                )
-                get_result_duration = time.perf_counter() - get_result_start_time
-                total_get_result_calls += 1
-                total_get_result_duration += get_result_duration
-
-                if result is not None:
-                    total_wait_duration = time.perf_counter() - feedback_wait_start_time
-                    avg_get_result_duration = (
-                        total_get_result_duration / total_get_result_calls
-                    )
-                    
-                    # 记录客户端信息
-                    client_count = 0
-                    if self.app and hasattr(self.app, 'get_active_client_count'):
-                        client_count = self.app.get_active_client_count()
-                    
-                    logger.info(
-                        f"收到反馈结果。总等待时间 {total_wait_duration:.3f} 秒，活跃客户端 {client_count} 个，get_result调用次数 {total_get_result_calls}，平均get_result耗时 {avg_get_result_duration:.4f} 秒"
-                    )
-                    return result
-            except Exception as e:
-                logger.error(f"获取反馈结果时出错: {e}")
-                time.sleep(1)  # 出错时稍作等待，避免高频错误循环
-
-            # 6. 定期日志输出（避免静默运行）
-            if current_time - last_log_time >= self.feedback_log_interval:
-                elapsed_time_log = time.perf_counter() - feedback_wait_start_time
-                remaining_time = timeout_seconds - elapsed_time_log
-                avg_get_result_duration = (
-                    total_get_result_duration / total_get_result_calls
-                    if total_get_result_calls > 0
-                    else 0
-                )
-                
-                # 获取客户端状态信息
-                client_info = "未知"
-                if self.app and hasattr(self.app, 'get_active_client_count'):
-                    client_count = self.app.get_active_client_count()
-                    client_info = f"{client_count} 个活跃客户端"
-                
-                # 显示当前状态
-                if elapsed_time <= browser_grace_period:
-                    status_msg = f"浏览器宽限期 (剩余 {browser_grace_period - elapsed_time:.1f} 秒)"
-                else:
-                    status_msg = f"活跃监控中，{client_info}"
-                
-                logger.debug(
-                    f"等待反馈中... 已等待 {elapsed_time_log:.1f} 秒，剩余 {remaining_time:.1f} 秒，状态: {status_msg}，get_result调用 {total_get_result_calls} 次，平均耗时 {avg_get_result_duration:.4f} 秒"
-                )
-                last_log_time = current_time
-
-            # 7. 检测循环休眠间隔，降低CPU占用
-            time.sleep(self.feedback_polling_interval)
-
-    def _handle_backend_timeout(self):
-        """处理后端超时的情况"""
-        logger.info("后端超时兜底触发，提交超时捕获数据")
+    def _wait_for_websocket_connection(self, grace_period: int) -> bool:
+        """等待WebSocket连接建立"""
+        start_time = time.time()
         
-        # 提交超时捕获数据
-        timeout_data = {
+        while time.time() - start_time < grace_period:
+            if self.app and self.app.has_active_clients():
+                return True
+            time.sleep(1)
+        
+        logger.warning(f"WebSocket连接未在{grace_period}秒内建立")
+        return False
+    
+    def _create_timeout_result(self, reason: str) -> Dict[str, Any]:
+        """创建统一格式的超时结果"""
+        from datetime import datetime
+        
+        return {
             'text': '',
             'images': [],
-            'source_event': 'backend_timeout',
-            'is_timeout_capture': True,
-            'user_agent': '',
-            'ip_address': 'timeout'
+            'is_timeout': True,
+            'timeout_reason': reason,
+            'timestamp': datetime.now().isoformat()
         }
-        
-        self.feedback_handler.submit_feedback(timeout_data)
 
     def stop_server(self) -> None:
         """停止服务器"""

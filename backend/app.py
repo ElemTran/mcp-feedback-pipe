@@ -10,7 +10,7 @@ import time
 import threading
 from typing import Dict, Any, Optional
 from flask import Flask
-from flask_socketio import SocketIO, emit, disconnect
+from flask_socketio import SocketIO, emit
 from backend.security.csrf_handler import CSRFProtection, SecurityConfig
 from backend.routes.feedback_routes import feedback_bp, init_feedback_routes
 from backend.utils.logging_utils import log_message
@@ -42,86 +42,39 @@ class FeedbackApp:
         self.cleanup_thread: Optional[threading.Thread] = None
         self.shutdown_flag = threading.Event()
         
-        # Log unexpected arguments if any
-        if kwargs:
+        # 记录真正意外的参数（排除已知的可选参数）
+        known_optional_params = {'server_manager_instance'}  # 已知但不使用的参数
+        unexpected_kwargs = {k: v for k, v in kwargs.items() if k not in known_optional_params}
+        
+        if unexpected_kwargs:
             log_message(
-                f"[DEBUG] FeedbackApp initialized with unexpected keyword arguments: {list(kwargs.keys())}"
-            )  # Log only keys for brevity
+                f"[DEBUG] FeedbackApp initialized with unexpected "
+                f"keyword arguments: {list(unexpected_kwargs.keys())}"
+            )
 
     def create_app(self) -> Flask:
         """创建Flask应用实例 - WebSocket增强版"""
         # 获取当前文件的绝对路径
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
         
-        # 根据不同情况计算项目根目录
-        # 情况1: 开发环境 - 文件在 .../project_root/backend/app.py
-        # 情况2: 包安装环境 - 文件在 .../site-packages/backend/app.py
-        # 情况3: PYTHONPATH环境 - 当前文件可能在任何位置
+        # 计算项目根目录（从 backend/ 目录向上一级）
+        project_root = os.path.abspath(os.path.join(current_file_dir, ".."))
         
-        # 尝试多种路径计算方式
-        potential_project_roots = []
+        # 固定指向 frontend/ 目录下的资源，确保使用绝对路径
+        template_folder = os.path.abspath(os.path.join(project_root, "frontend", "templates"))
+        static_folder = os.path.abspath(os.path.join(project_root, "frontend", "static"))
         
-        # 方式1: 从当前文件向上查找（开发环境）
-        project_root_1 = os.path.abspath(os.path.join(current_file_dir, ".."))
-        potential_project_roots.append(project_root_1)
+        # 验证路径是否存在，并记录调试信息
+        log_message(f"[DEBUG] Project root: {project_root}")
+        log_message(f"[DEBUG] Template folder: {template_folder}")
+        log_message(f"[DEBUG] Static folder: {static_folder}")
+        log_message(f"[DEBUG] Template folder exists: {os.path.exists(template_folder)}")
+        log_message(f"[DEBUG] Static folder exists: {os.path.exists(static_folder)}")
         
-        # 方式2: 查找包含 'mcp-feedback-pipe' 的父目录
-        current_path = current_file_dir
-        while current_path != os.path.dirname(current_path):  # 直到根目录
-            if 'mcp-feedback-pipe' in os.path.basename(current_path):
-                potential_project_roots.append(current_path)
-                break
-            current_path = os.path.dirname(current_path)
-        
-        # 尝试查找模板和静态文件目录
-        template_paths = []
-        static_paths = []
-        
-        for project_root in potential_project_roots:
-            # 开发环境路径
-            template_paths.extend([
-                os.path.join(project_root, "frontend", "templates"),
-                os.path.join(project_root, "backend", "templates"),
-            ])
-            static_paths.extend([
-                os.path.join(project_root, "frontend", "static"),
-                os.path.join(project_root, "backend", "static"),
-            ])
-        
-        # 包安装环境路径（backend内）
-        template_paths.append(os.path.join(current_file_dir, "templates"))
-        static_paths.append(os.path.join(current_file_dir, "static"))
-        
-        # 调试信息
-        # print(f"[DEBUG] current_file_dir: {current_file_dir}")
-        # print(f"[DEBUG] potential_project_roots: {potential_project_roots}")
-        # print(f"[DEBUG] template_paths: {template_paths}")
-        # print(f"[DEBUG] static_paths: {static_paths}")
-        
-        # 查找存在的模板目录
-        template_folder = None
-        for path in template_paths:
-            # print(f"[DEBUG] 检查模板路径: {path} -> 存在: {os.path.exists(path)}")
-            if os.path.exists(path):
-                template_folder = path
-                break
-        
-        # 查找存在的静态目录
-        static_folder = None
-        for path in static_paths:
-            # print(f"[DEBUG] 检查静态路径: {path} -> 存在: {os.path.exists(path)}")
-            if os.path.exists(path):
-                static_folder = path
-                break
-        
-        # 如果都找不到，使用默认路径（让Flask报错）
-        if template_folder is None:
-            template_folder = template_paths[0] if template_paths else os.path.join(current_file_dir, "templates")
-        if static_folder is None:
-            static_folder = static_paths[0] if static_paths else os.path.join(current_file_dir, "static")
-
-        # print(f"[DEBUG] 最终选择的模板路径: {template_folder}")
-        # print(f"[DEBUG] 最终选择的静态路径: {static_folder}")
+        # 检查关键模板文件是否存在
+        feedback_template_path = os.path.join(template_folder, "feedback.html")
+        log_message(f"[DEBUG] feedback.html path: {feedback_template_path}")
+        log_message(f"[DEBUG] feedback.html exists: {os.path.exists(feedback_template_path)}")
 
         app = Flask(
             __name__,
@@ -132,6 +85,11 @@ class FeedbackApp:
         # 安全配置
         app.config["SECRET_KEY"] = secrets.token_urlsafe(32)
         app.config["MAX_CONTENT_LENGTH"] = SecurityConfig.MAX_CONTENT_LENGTH
+        
+        # Flask URL构建相关配置 - 修复模板渲染中的URL构建问题
+        app.config["SERVER_NAME"] = None  # 允许任意主机名
+        app.config["APPLICATION_ROOT"] = "/"
+        app.config["PREFERRED_URL_SCHEME"] = "http"
 
         # 初始化SocketIO
         self.socketio = SocketIO(
@@ -258,19 +216,15 @@ class FeedbackApp:
         log_message("[WebSocket] 客户端监控线程已启动")
 
     def _monitor_clients(self):
-        """监控客户端活跃度"""
-        # 设置启动宽限期（15秒），给浏览器时间连接
-        startup_grace_period = 15.0
-        monitor_start_time = time.time()
-        
-        log_message(f"[WebSocket] 客户端监控开始，{startup_grace_period}秒启动宽限期")
+        """监控客户端活跃度 - 简化版本，仅负责清理不活跃连接"""
+        log_message("[WebSocket] 客户端监控开始（简化版）")
         
         while not self.shutdown_flag.is_set():
             try:
                 current_time = time.time()
-                elapsed_since_start = current_time - monitor_start_time
                 inactive_clients = []
                 
+                # 查找不活跃的客户端
                 for client_id, client_info in self.active_clients.items():
                     last_heartbeat = client_info['last_heartbeat']
                     if current_time - last_heartbeat > self.client_timeout:
@@ -281,40 +235,13 @@ class FeedbackApp:
                     if client_id in self.active_clients:
                         del self.active_clients[client_id]
                         log_message(f"[WebSocket] 清理不活跃客户端: {client_id}")
-                
-                # 仅在启动宽限期后检查客户端断开
-                if elapsed_since_start > startup_grace_period:
-                    if not self.active_clients:
-                        log_message("[WebSocket] 检测到所有客户端已断开")
-                        self._handle_all_clients_disconnected()
-                        break
-                else:
-                    # 在宽限期内，记录状态但不触发断开检测
-                    if current_time - monitor_start_time > 5 and (int(elapsed_since_start) % 5 == 0):
-                        remaining_grace = startup_grace_period - elapsed_since_start
-                        log_message(f"[WebSocket] 启动宽限期中，剩余 {remaining_grace:.1f} 秒，当前客户端: {len(self.active_clients)} 个")
-                    
+                        
             except Exception as e:
                 log_message(f"[WebSocket] 客户端监控错误: {e}")
             
             # 等待下一次检查
             self.shutdown_flag.wait(10)  # 每10秒检查一次
 
-    def _handle_all_clients_disconnected(self):
-        """处理所有客户端断开的情况"""
-        log_message("[WebSocket] 所有客户端已断开，触发超时处理")
-        
-        # 提交超时捕获数据
-        timeout_data = {
-            'text': '',
-            'images': [],
-            'source_event': 'client_disconnected',
-            'is_timeout_capture': True,
-            'user_agent': '',
-            'ip_address': 'disconnected'
-        }
-        
-        self.feedback_handler.submit_feedback(timeout_data)
 
     def has_active_clients(self) -> bool:
         """检查是否有活跃客户端"""
@@ -335,14 +262,16 @@ class FeedbackApp:
 
     def run(self, host="127.0.0.1", port=5000, debug=False, **kwargs):
         """运行Flask应用 - WebSocket增强版"""
-        app = self.create_app()
+        # 检查是否已创建应用实例，如果没有则创建
+        if not hasattr(self, '_flask_app') or self._flask_app is None:
+            self._flask_app = self.create_app()
         
         # 启动客户端监控
         self.start_client_monitor()
         
         # 使用SocketIO运行应用
         self.socketio.run(
-            app,
+            self._flask_app,
             host=host,
             port=port,
             debug=debug,

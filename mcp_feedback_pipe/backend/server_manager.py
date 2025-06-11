@@ -75,7 +75,6 @@ class ServerManager:
             work_summary=work_summary,
             suggest_json=suggest,
             timeout_seconds=timeout_seconds,
-            server_manager_instance=self,
         )
         app_creation_duration = time.perf_counter() - app_creation_start_time
         logger.info(f"性能监控: 应用实例创建耗时 {app_creation_duration:.3f} 秒")

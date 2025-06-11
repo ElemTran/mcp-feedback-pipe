@@ -198,15 +198,26 @@ export class WebSocketManager {
 
         return new Promise((resolve, reject) => {
             try {
-                this.socket.emit('submit_feedback', {
+                // 构建完整的提交数据，包含所有可能的字段
+                const submitData = {
                     text: feedbackData.text || '',
                     images: feedbackData.images || [],
                     user_agent: navigator.userAgent,
                     timestamp: Date.now(),
-                    client_id: this.clientId
-                });
+                    client_id: this.clientId,
+                    // 超时相关字段
+                    is_timeout: feedbackData.is_timeout || false,
+                    timeout_reason: feedbackData.timeout_reason || null,
+                    // 其他可能的元数据
+                    ...feedbackData
+                };
 
-                console.log('📤 反馈已通过WebSocket提交');
+                this.socket.emit('submit_feedback', submitData);
+
+                console.log('📤 反馈已通过WebSocket提交', {
+                    is_timeout: submitData.is_timeout,
+                    timeout_reason: submitData.timeout_reason
+                });
                 resolve(true);
 
             } catch (error) {

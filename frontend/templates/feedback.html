@@ -109,6 +109,7 @@
     <script type="module">
         import { WebSocketManager } from '{{ url_for("static", filename="js/modules/websocket-manager.js") }}';
         import { UIStatusManager } from '{{ url_for("static", filename="js/modules/ui-status-manager.js") }}';
+        import { TimeoutManager } from '{{ url_for("static", filename="js/modules/timeout-manager.js") }}';
         
         // 应用配置
         const appConfig = JSON.parse(document.getElementById('appConfig').textContent);
@@ -121,6 +122,12 @@
         
         const uiManager = new UIStatusManager();
         
+        // 初始化超时管理器（但不立即启动）
+        const timeoutManager = new TimeoutManager({
+            timeout_seconds: appConfig.timeout_seconds,
+            warning_threshold: 30
+        });
+        
         // WebSocket事件处理
         wsManager.on('connected', () => {
             uiManager.updateConnectionStatus('connected', '已连接');
@@ -130,12 +137,17 @@
         wsManager.on('ready', (data) => {
             uiManager.updateSubmitButton('ready');
             uiManager.showInfo(`客户端ID: ${data.client_id}`);
+            
+            // WebSocket连接就绪后启动超时管理器
+            timeoutManager.start();
+            console.log('⏰ 超时管理器已启动');
         });
         
         wsManager.on('disconnected', (reason) => {
             uiManager.updateConnectionStatus('disconnected', '连接断开');
             uiManager.updateSubmitButton('offline');
             uiManager.showWarning(`连接断开: ${reason}`);
+            timeoutManager.stop(); // 连接断开时停止超时计时器
         });
         
         wsManager.on('error', (error) => {
@@ -146,7 +158,58 @@
         wsManager.on('feedback_received', (data) => {
             uiManager.updateSubmitButton('success');
             uiManager.showSuccess('反馈提交成功！');
+            timeoutManager.stop(); // 停止超时计时器
             setTimeout(() => window.close(), 2000);
+        });
+        
+        // TimeoutManager事件处理
+        timeoutManager.on('countdown_update', (data) => {
+            // 更新倒计时显示
+            const countdownElement = document.getElementById('timeoutCountdown');
+            if (countdownElement) {
+                countdownElement.textContent = timeoutManager.formatRemainingTime();
+            }
+        });
+        
+        timeoutManager.on('warning', (data) => {
+            // 30秒警告
+            uiManager.showWarning(`剩余${data.remaining_seconds}秒，请尽快完成反馈`, 5000);
+            console.log('⚠️ 超时警告:', data);
+        });
+        
+        timeoutManager.on('timeout', async (data) => {
+            // 超时处理
+            console.log('⏰ 页面超时，开始自动提交用户数据');
+            
+            // 获取当前用户输入
+            const currentText = textArea.value.trim();
+            const currentImages = [...selectedImages]; // 复制数组
+            
+            // 显示超时状态
+            uiManager.showWarning('已超时，正在尝试保存您的反馈...', 0);
+            uiManager.updateSubmitButton('submitting');
+            
+            try {
+                // 通过WebSocket提交当前数据，包含超时标志
+                await wsManager.submitFeedback({
+                    text: currentText,
+                    images: currentImages,
+                    is_timeout: true,
+                    timeout_reason: 'frontend_timeout'
+                });
+                
+                uiManager.showInfo('超时数据已保存');
+                
+            } catch (error) {
+                console.error('超时提交失败:', error);
+                uiManager.showError('超时保存失败');
+            }
+            
+            // 短暂延迟后关闭页面
+            setTimeout(() => {
+                console.log('🚪 自动关闭页面');
+                window.close();
+            }, 3000);
         });
         
         // 表单提交处理
@@ -288,24 +351,16 @@
             uiManager.showInfo(`已删除图片 (${selectedImages.length}/5)`);
         };
         
-        // 超时倒计时
-        let timeoutSeconds = appConfig.timeout_seconds;
+        // 初始化倒计时显示
         const countdownElement = document.getElementById('timeoutCountdown');
-        
-        function updateCountdown() {
-            if (timeoutSeconds > 0) {
-                const minutes = Math.floor(timeoutSeconds / 60);
-                const seconds = timeoutSeconds % 60;
-                countdownElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                timeoutSeconds--;
-                setTimeout(updateCountdown, 1000);
-            } else {
-                countdownElement.textContent = '已超时';
-                window.close();
-            }
+        if (countdownElement) {
+            countdownElement.textContent = timeoutManager.formatRemainingTime();
         }
         
-        updateCountdown();
+        // 页面卸载时清理资源
+        window.addEventListener('beforeunload', () => {
+            timeoutManager.destroy();
+        });
         
         // 页面加载完成提示
         uiManager.showInfo('页面加载完成，正在建立WebSocket连接...');

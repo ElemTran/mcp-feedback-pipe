@@ -3,25 +3,16 @@ MCP反馈通道服务器 v3.0
 基于Web的现代化反馈收集系统，支持SSH环境
 """
 
-import faulthandler
-faulthandler.enable()
-
 import argparse
 import base64
 import codecs
 import json
+import os
 import sys
 from typing import List
 
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.utilities.types import Image as MCPImage
-
-# Initial log test for backend/server.py
-try:
-    with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-        log_file.write(">>> BACKEND MCP Server: Initial log entry test.\n")
-except Exception as e_log_init:
-    print(f">>> BACKEND MCP Server: Failed to write initial log entry: {e_log_init}")
 
 # 使用绝对导入，以backend为顶级包
 from backend.server_pool import get_managed_server, release_managed_server
@@ -685,13 +676,6 @@ def create_server_pool(server_configs: List[dict]) -> str:
 
 def main():
     """主入口点"""
-    with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-        log_file.write(">>> BACKEND MCP Server: main() - Entered main function.\n")
-        if 'mcp' in globals() and mcp is not None:
-            log_file.write(">>> BACKEND MCP Server: main() - 'mcp' object exists.\n")
-        else:
-            log_file.write(">>> BACKEND MCP Server: main() - 'mcp' object DOES NOT exist or is None.\n")
-    
     parser = argparse.ArgumentParser(
         description="MCP反馈通道 - 现代化Web反馈收集工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -712,39 +696,81 @@ def main():
     # 解析参数（即使当前没有使用，保留以便将来扩展）
     parser.parse_args()
 
-    with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-        log_file.write(">>> BACKEND MCP Server: main() - Attempting to start FastMCP server...\n")
     try:
-        # 启动MCP服务器
-        mcp.run()
-        with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-            log_file.write(">>> BACKEND MCP Server: main() - FastMCP server stopped.\n")
+        # 检查是否启用Web模式
+        use_web = os.getenv("MCP_USE_WEB", "").lower() in ("true", "1", "yes")
+        
+        if use_web:
+            # Web模式：启动阻塞式Web服务器
+            print("🚀 启动Web模式的MCP反馈服务器...")
+            _start_web_mode()
+        else:
+            # 标准MCP模式
+            mcp.run()
     except Exception as e_mcp_run:
-        with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-            log_file.write(f">>> BACKEND MCP Server: main() - Error during FastMCP server execution: {e_mcp_run}\n")
+        # 在这里可以添加更合适的日志记录方式，例如使用logging模块
+        print(f"Error during FastMCP server execution: {e_mcp_run}")
         raise
- 
+
+
+def _start_web_mode():
+    """启动Web模式的阻塞式服务器"""
+    import threading
+    import signal
+    import sys
+    
+    print("🌐 Web模式已启用，启动持久化Web服务器...")
+    
+    # 导入必要的组件
+    from backend.app import FeedbackApp
+    from backend.feedback_handler import FeedbackHandler
+    from backend.utils.network_utils import find_free_port
+    
+    # 创建反馈处理器和应用实例
+    feedback_handler = FeedbackHandler()
+    server_config = get_server_config()
+    
+    # 获取首选端口
+    preferred_port = getattr(server_config, 'preferred_web_port', 8765)
+    port = find_free_port(preferred_port=preferred_port)
+    
+    # 创建Flask应用
+    app = FeedbackApp(
+        feedback_handler=feedback_handler,
+        work_summary="MCP反馈服务器 - Web模式",
+        suggest_json="",
+        timeout_seconds=300
+    )
+    
+    print(f"🚀 Web服务器启动在端口 {port}")
+    print(f"📱 本地访问地址: http://127.0.0.1:{port}/")
+    print(f"🔗 SSH转发命令示例: ssh -L 8888:127.0.0.1:{port} your_user@your_server")
+    print(f"🌍 设置SSH转发后访问: http://127.0.0.1:8888/")
+    print("⏹️  按 Ctrl+C 停止服务器")
+    
+    # 设置优雅的停止信号处理
+    def signal_handler(signum, frame):
+        print("\n🛑 收到停止信号，正在关闭服务器...")
+        if hasattr(app, 'stop'):
+            app.stop()
+        sys.exit(0)
+    
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
+    try:
+        # 启动阻塞式Web服务器
+        app.run(
+            host="127.0.0.1",
+            port=port,
+            debug=False,
+            use_reloader=False
+        )
+    except KeyboardInterrupt:
+        print("\n🛑 服务器已停止")
+    except Exception as e:
+        print(f"❌ Web服务器启动失败: {e}")
+        raise
  
 if __name__ == "__main__":
-    try:
-        with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-            log_file.write(">>> BACKEND MCP Server: __main__ block reached.\n")
-            log_file.write(">>> BACKEND MCP Server: __main__ - About to call main().\n")
-    except Exception as e_outer_log:
-        print(f"Error writing to log before main() call in backend/server.py: {e_outer_log}")
-    
-    try:
-        main()
-    except Exception as e_main_call:
-        try:
-            with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-                log_file.write(f">>> BACKEND MCP Server: __main__ - Error calling main(): {e_main_call}\n")
-        except Exception:
-            pass
-        raise
-    
-    try:
-        with open("debug_backend_server_startup.log", "a", encoding="utf-8") as log_file:
-            log_file.write(">>> BACKEND MCP Server: __main__ - Returned from main() call.\n")
-    except Exception:
-        pass
+    main()

@@ -3,6 +3,7 @@
 包含所有反馈相关的路由定义
 """
 
+import os
 import time
 from typing import Optional, Any
 from flask import (
@@ -18,8 +19,25 @@ from backend.request_processing import (
 )
 from backend.utils.logging_utils import log_message
 
-# 创建蓝图
-feedback_bp = Blueprint("feedback", __name__)
+# 计算模板文件夹路径，确保蓝图能够找到模板
+_current_file_dir = os.path.dirname(os.path.abspath(__file__))
+_project_root = os.path.abspath(os.path.join(_current_file_dir, "..", ".."))
+_template_folder = os.path.abspath(os.path.join(_project_root, "frontend", "templates"))
+_static_folder = os.path.abspath(os.path.join(_project_root, "frontend", "static"))
+
+# 创建蓝图，明确指定模板和静态文件夹
+feedback_bp = Blueprint(
+    "feedback",
+    __name__,
+    template_folder=_template_folder,
+    static_folder=_static_folder,
+    static_url_path='/feedback_static'
+)
+
+# 记录调试信息
+log_message(f"[DEBUG] Blueprint template folder: {_template_folder}")
+log_message(f"[DEBUG] Blueprint static folder: {_static_folder}")
+log_message(f"[DEBUG] Blueprint template folder exists: {os.path.exists(_template_folder)}")
 
 # 全局变量用于存储应用依赖
 _feedback_handler = None
@@ -58,6 +76,10 @@ def init_feedback_routes(
 def index():
     """主页面"""
     csrf_token = _csrf_protection.generate_token()
+    
+    log_message(f"[DEBUG] 开始渲染反馈页面模板")
+    
+    # 直接使用Flask标准模板渲染 - 路径配置已在应用创建时正确设置
     return render_template(
         "feedback.html",
         work_summary=_work_summary,
