@@ -21,16 +21,17 @@ class TestGetImageInfo:
         result = get_image_info("/nonexistent/path.jpg")
         assert "文件不存在" in result
     
-    @patch('backend.utils.PIL_AVAILABLE', False)
-    def test_get_image_info_no_pil(self):
+    @patch('backend.utils.image_utils.PIL_AVAILABLE', False)
+    @patch('backend.utils.image_utils.Path.exists', return_value=True)
+    def test_get_image_info_no_pil(self, mock_exists):
         """测试PIL不可用的情况"""
         result = get_image_info("test.jpg")
         assert "Pillow库未安装" in result
     
-    @patch('backend.utils.PIL_AVAILABLE', True)
-    @patch('backend.utils.Image.open')
-    @patch('backend.utils.Path.exists', return_value=True)
-    @patch('backend.utils.Path.stat')
+    @patch('backend.utils.image_utils.PIL_AVAILABLE', True)
+    @patch('backend.utils.image_utils.Image.open')
+    @patch('backend.utils.image_utils.Path.exists', return_value=True)
+    @patch('backend.utils.image_utils.Path.stat')
     def test_get_image_info_success(self, mock_stat, mock_exists, mock_open):
         """测试成功获取图片信息"""
         # 设置模拟数据
@@ -55,14 +56,14 @@ class TestGetImageInfo:
 class TestValidateImageData:
     """测试validate_image_data函数"""
     
-    @patch('backend.utils.PIL_AVAILABLE', False)
+    @patch('backend.utils.image_utils.PIL_AVAILABLE', False)
     def test_validate_image_data_no_pil(self):
         """测试PIL不可用的情况"""
         result = validate_image_data(b"fake_data")
         assert result is False
     
-    @patch('backend.utils.PIL_AVAILABLE', True)
-    @patch('backend.utils.Image.open')
+    @patch('backend.utils.image_utils.PIL_AVAILABLE', True)
+    @patch('backend.utils.image_utils.Image.open')
     def test_validate_image_data_valid(self, mock_open):
         """测试有效图片数据"""
         mock_img = MagicMock()
@@ -71,8 +72,8 @@ class TestValidateImageData:
         result = validate_image_data(b"valid_image_data")
         assert result is True
     
-    @patch('backend.utils.PIL_AVAILABLE', True)
-    @patch('backend.utils.Image.open', side_effect=Exception("Invalid"))
+    @patch('backend.utils.image_utils.PIL_AVAILABLE', True)
+    @patch('backend.utils.image_utils.Image.open', side_effect=Exception("Invalid"))
     def test_validate_image_data_invalid(self, mock_open):
         """测试无效图片数据"""
         result = validate_image_data(b"invalid_data")

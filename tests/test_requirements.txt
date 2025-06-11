@@ -3,5 +3,6 @@ pytest-cov>=4.0.0
 pytest-mock>=3.10.0
 pytest-html>=3.1.0
 pytest-xdist>=3.0.0
-selenium>=4.0.0
+selenium>=4.21.0
 requests>=2.25.0
+putil>=1.0.0

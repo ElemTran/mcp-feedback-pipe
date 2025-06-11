@@ -32,14 +32,19 @@ def test_collect_feedback():
         server_manager.stop_server()
         print("✓ 服务器停止成功")
         
-        return True
+        # 测试成功，不返回任何值
         
     except Exception as e:
         print(f"✗ 测试失败: {e}")
         import traceback
         traceback.print_exc()
-        return False
+        assert False, f"测试失败: {e}"
 
 if __name__ == "__main__":
-    success = test_collect_feedback()
-    sys.exit(0 if success else 1)
+    try:
+        test_collect_feedback()
+        # 如果没有抛出异常，说明测试成功
+        sys.exit(0)
+    except Exception:
+        # 如果抛出异常，说明测试失败
+        sys.exit(1)

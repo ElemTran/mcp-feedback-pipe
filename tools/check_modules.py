@@ -27,7 +27,7 @@ for name in sorted(sys.modules.keys()):
 
 print('\n=== 尝试导入server模块 ===')
 try:
-    from backend import server
+    from . import server
     print('✓ server模块导入成功')
     print('server位置:', server.__file__)
 except Exception as e:

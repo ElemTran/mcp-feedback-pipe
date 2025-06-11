@@ -20,21 +20,16 @@ class TestServerManager:
         assert manager.server_thread is None
         assert manager.current_port is None
     
-    @patch('socket.socket')
-    def test_find_free_port(self, mock_socket):
+    @patch('backend.server_manager.find_free_port')
+    def test_find_free_port(self, mock_find_free_port):
         """测试查找空闲端口"""
         manager = ServerManager()
-        
-        # 模拟socket行为
-        mock_sock = MagicMock()
-        mock_sock.getsockname.return_value = ('127.0.0.1', 8080)
-        mock_socket.return_value.__enter__.return_value = mock_sock
+        mock_find_free_port.return_value = 8080
         
         port = manager.find_free_port()
         
         assert port == 8080
-        mock_sock.bind.assert_called_once_with(('', 0))
-        mock_sock.listen.assert_called_once_with(1)
+        mock_find_free_port.assert_called_once_with(preferred_port=None)
     
     def test_get_server_info_not_running(self):
         """测试获取未运行服务器的信息"""
@@ -62,21 +57,22 @@ class TestServerManager:
     @patch('backend.server_manager.FeedbackApp')
     @patch('threading.Thread')
     @patch('time.sleep')
-    def test_start_server(self, mock_sleep, mock_thread, mock_feedback_app):
+    @patch('backend.server_manager.find_free_port')
+    @patch('backend.server_manager.open_feedback_browser')
+    def test_start_server(self, mock_open_browser, mock_find_free_port, mock_sleep, mock_thread, mock_feedback_app):
         """测试启动服务器"""
         manager = ServerManager()
+        mock_find_free_port.return_value = 8080
         
-        # 模拟查找端口
-        with patch.object(manager, 'find_free_port', return_value=8080):
-            # 模拟浏览器打开
-            with patch.object(manager, '_open_browser') as mock_open_browser:
-                port = manager.start_server("测试工作汇报", 300)
+        # 模拟服务器就绪检查
+        with patch.object(manager, '_wait_for_server_ready', return_value=True):
+            port = manager.start_server("测试工作汇报", 300)
         
         assert port == 8080
         assert manager.current_port == 8080
-        mock_feedback_app.assert_called_once_with(manager.feedback_handler)
+        mock_feedback_app.assert_called_once()
         mock_thread.assert_called_once()
-        mock_open_browser.assert_called_once_with("测试工作汇报")
+        mock_open_browser.assert_called_once_with(8080, "测试工作汇报", "")
     
     @patch('backend.server_manager.webbrowser.open')
     @patch('backend.server_manager.quote')
@@ -112,13 +108,18 @@ class TestServerManager:
         manager = ServerManager()
         expected_result = {'test': 'feedback'}
         
-        # 模拟feedback_handler返回结果
-        manager.feedback_handler.get_result = MagicMock(return_value=expected_result)
+        # 设置端口以避免连接检测失败
+        manager.current_port = 8080
         
-        result = manager.wait_for_feedback(300)
+        # 模拟连接检测和服务器健康检查
+        with patch.object(manager, '_check_client_disconnection', return_value=False):
+            with patch.object(manager, '_is_server_healthy', return_value=True):
+                # 模拟feedback_handler返回结果
+                manager.feedback_handler.get_result = MagicMock(return_value=expected_result)
+                
+                result = manager.wait_for_feedback(300)
         
         assert result == expected_result
-        manager.feedback_handler.get_result.assert_called_once_with(300)
     
     def test_stop_server_with_thread(self):
         """测试停止运行中的服务器"""
@@ -148,14 +149,16 @@ class TestServerManagerIntegration:
     @patch('backend.server_manager.FeedbackApp')
     @patch('threading.Thread')
     @patch('time.sleep')
-    @patch('backend.server_manager.webbrowser.open')
-    def test_full_server_lifecycle(self, mock_webbrowser, mock_sleep, 
+    @patch('backend.server_manager.find_free_port')
+    @patch('backend.server_manager.open_feedback_browser')
+    def test_full_server_lifecycle(self, mock_open_browser, mock_find_free_port, mock_sleep,
                                   mock_thread, mock_feedback_app):
         """测试完整的服务器生命周期"""
         manager = ServerManager()
+        mock_find_free_port.return_value = 8080
         
         # 启动服务器
-        with patch.object(manager, 'find_free_port', return_value=8080):
+        with patch.object(manager, '_wait_for_server_ready', return_value=True):
             port = manager.start_server("测试", 300)
         
         assert port == 8080

@@ -14,7 +14,7 @@ def test_imports():
     print("📦 测试模块导入...")
     try:
         import backend
-        from backend import server
+        from . import server
         from backend.app import FeedbackApp
         print("✅ 模块导入成功")
         return True

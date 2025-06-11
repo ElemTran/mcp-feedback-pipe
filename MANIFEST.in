@@ -28,11 +28,13 @@ recursive-include scripts *.bat     # Windows批处理脚本
 recursive-include scripts *.sh      # Shell脚本
 
 # 包含源代码
-recursive-include src *.py          # 所有Python源码
+include server.py                    # 主服务器脚本
+recursive-include backend *.py      # 后端Python源码
+recursive-include mcp_feedback_pipe *.py    # 包Python源码
 
 # 包含静态资源和模板
-recursive-include src/mcp_feedback_pipe/static *    # Web静态文件
-recursive-include src/mcp_feedback_pipe/templates * # HTML模板
+recursive-include frontend/static *    # Web静态文件
+recursive-include frontend/templates * # HTML模板
 
 # 包含文档目录（docs/目录下的所有文档）
 recursive-include docs *.md         # Markdown文档

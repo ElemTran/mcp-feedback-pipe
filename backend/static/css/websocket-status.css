@@ -1,0 +1,271 @@
+/**
+ * WebSocket连接状态和消息显示样式
+ * 提供清晰的视觉反馈，支持不同连接状态
+ */
+
+/* 连接状态容器 */
+.connection-status-container {
+    margin: 10px 0;
+    padding: 0;
+}
+
+/* 连接状态指示器 */
+.connection-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 0.85em;
+    font-weight: 500;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid transparent;
+}
+
+/* 连接状态 - 连接中 */
+.connection-status.connecting {
+    background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+    color: #2d3436;
+    border-color: #fdcb6e;
+    animation: pulse-connecting 2s infinite;
+}
+
+/* 连接状态 - 已连接 */
+.connection-status.connected {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: white;
+    border-color: #00b894;
+    box-shadow: 0 2px 8px rgba(0, 184, 148, 0.3);
+}
+
+/* 连接状态 - 已断开 */
+.connection-status.disconnected {
+    background: linear-gradient(135deg, #636e72, #2d3436);
+    color: #ddd;
+    border-color: #636e72;
+}
+
+/* 连接状态 - 错误 */
+.connection-status.error {
+    background: linear-gradient(135deg, #e17055, #d63031);
+    color: white;
+    border-color: #e17055;
+    animation: shake 0.5s ease-in-out;
+}
+
+/* 连接状态动画 */
+@keyframes pulse-connecting {
+    0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.7;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* 连接状态前缀图标 */
+.connection-status::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.connection-status.connecting::before {
+    background: #fdcb6e;
+    animation: blink 1s infinite;
+}
+
+.connection-status.connected::before {
+    background: #00b894;
+    box-shadow: 0 0 8px rgba(0, 184, 148, 0.6);
+}
+
+.connection-status.disconnected::before {
+    background: #636e72;
+}
+
+.connection-status.error::before {
+    background: #d63031;
+    animation: flash-error 0.5s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+@keyframes flash-error {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+
+/* 消息区域 */
+.message-area {
+    margin-top: 8px;
+    min-height: 0;
+    transition: all 0.3s ease;
+}
+
+/* 消息样式 */
+.message {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9em;
+    line-height: 1.4;
+    animation: slideInFromTop 0.3s ease-out;
+    border-left: 4px solid transparent;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 消息类型样式 */
+.message.info {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    color: #1565c0;
+    border-left-color: #2196f3;
+}
+
+.message.success {
+    background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+    color: #2e7d32;
+    border-left-color: #4caf50;
+}
+
+.message.warning {
+    background: linear-gradient(135deg, #fff8e1, #ffecb3);
+    color: #f57f17;
+    border-left-color: #ff9800;
+}
+
+.message.error {
+    background: linear-gradient(135deg, #ffebee, #ffcdd2);
+    color: #c62828;
+    border-left-color: #f44336;
+}
+
+/* 消息动画 */
+@keyframes slideInFromTop {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 按钮状态样式 */
+.btn.loading {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+    color: white;
+    cursor: wait;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.3), 
+        transparent
+    );
+    animation: loading-shine 1.5s infinite;
+}
+
+@keyframes loading-shine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.btn.success {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: white;
+    animation: success-pulse 0.5s ease-out;
+}
+
+@keyframes success-pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.btn.error {
+    background: linear-gradient(135deg, #e17055, #d63031);
+    color: white;
+    animation: error-shake 0.5s ease-out;
+}
+
+@keyframes error-shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+}
+
+.btn.disabled {
+    background: linear-gradient(135deg, #ddd, #bbb);
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .connection-status {
+        font-size: 0.8em;
+        padding: 5px 10px;
+    }
+    
+    .message {
+        font-size: 0.85em;
+        padding: 6px 10px;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    .connection-status {
+        border-width: 2px;
+    }
+    
+    .message {
+        border-width: 2px;
+        border-style: solid;
+    }
+    
+    .message.info { border-color: #1565c0; }
+    .message.success { border-color: #2e7d32; }
+    .message.warning { border-color: #f57f17; }
+    .message.error { border-color: #c62828; }
+}
+
+/* 减少动画模式支持 */
+@media (prefers-reduced-motion: reduce) {
+    .connection-status,
+    .message,
+    .btn {
+        animation: none !important;
+        transition: none !important;
+    }
+    
+    .connection-status::before {
+        animation: none !important;
+    }
+} 

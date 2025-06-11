@@ -11,19 +11,18 @@ UI层面的端到端（E2E）测试 - 会话行为验证
 
 import time
 import json
-import statistics
-import platform
-import psutil
+import os
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 import pytest
 
 from backend.server_manager import ServerManager
+from backend.server_pool import release_managed_server
 
 def timestamp():
     """获取当前时间戳字符串"""
@@ -42,8 +41,21 @@ def chrome_driver():
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument('--disable-gpu')
     
+    # 配置 Chrome 浏览器二进制路径
+    chrome_binary_path = os.environ.get('CHROME_BINARY_PATH')
+    if chrome_binary_path:
+        chrome_options.binary_location = chrome_binary_path
+    
+    # 配置 ChromeDriver 服务
+    chrome_driver_path = os.environ.get('CHROME_DRIVER_PATH')
+    if chrome_driver_path:
+        service = Service(executable_path=chrome_driver_path)
+    else:
+        # 不指定路径，让 Selenium Manager 自动处理
+        service = Service()
+    
     try:
-        driver = webdriver.Chrome(options=chrome_options)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
         log_with_timestamp("✅ Chrome WebDriver 启动成功")
         yield driver
     except Exception as e:
@@ -57,7 +69,13 @@ def server_manager():
     """ServerManager fixture"""
     sm = ServerManager()
     yield sm
-    sm.stop_server()
+    # 使用正确的资源清理方式
+    try:
+        session_id = f"test_session_{id(sm)}"
+        release_managed_server(session_id, immediate=True)
+    except Exception as e:
+        # 如果session_id不存在或其他错误，忽略
+        pass
 
 class TestFrontendTimeoutControl:
     """前端超时控制功能测试"""

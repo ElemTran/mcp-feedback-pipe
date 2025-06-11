@@ -86,6 +86,91 @@ def get_project_info():
         "version": version
     }
 
+def prepare_package_structure():
+    """准备包结构 - 自动配置入口点并确保必要文件存在"""
+    print("📦 准备包结构...")
+    
+    # 检查server.py是否存在，如果不存在就从backend/server.py复制
+    server_py = Path("server.py")
+    backend_server_py = Path("backend/server.py")
+    
+    if not server_py.exists():
+        if backend_server_py.exists():
+            print("🔧 从backend/server.py复制到根目录...")
+            import shutil
+            shutil.copy2(backend_server_py, server_py)
+            print("✅ server.py已复制到根目录")
+        else:
+            print("❌ 未找到server.py文件（根目录或backend/目录）")
+            sys.exit(1)
+    
+    # 读取当前的pyproject.toml
+    pyproject_path = Path("pyproject.toml")
+    if not pyproject_path.exists():
+        print("❌ 未找到pyproject.toml文件")
+        sys.exit(1)
+    
+    with open(pyproject_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # 检查当前的入口点配置
+    import re
+    
+    # 查找 [project.scripts] 部分
+    scripts_pattern = r'(\[project\.scripts\]\s*\n)(.*?)(?=\n\[|$)'
+    scripts_match = re.search(scripts_pattern, content, re.DOTALL)
+    
+    target_entry_point = 'mcp-feedback-pipe = "server:main"'
+    
+    if scripts_match:
+        current_scripts = scripts_match.group(2).strip()
+        print(f"📝 当前入口点配置: {current_scripts}")
+        
+        # 检查是否需要更新
+        if target_entry_point not in current_scripts:
+            print("🔧 更新入口点配置...")
+            new_scripts = f"[project.scripts]\n{target_entry_point}\n"
+            content = content[:scripts_match.start()] + new_scripts + content[scripts_match.end():]
+            
+            # 写回文件
+            with open(pyproject_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print("✅ 入口点配置已更新")
+        else:
+            print("✅ 入口点配置已正确")
+    else:
+        print("❌ 未找到[project.scripts]配置")
+        sys.exit(1)
+    
+    # 确保MANIFEST.in包含server.py
+    manifest_path = Path("MANIFEST.in")
+    if manifest_path.exists():
+        with open(manifest_path, 'r', encoding='utf-8') as f:
+            manifest_content = f.read()
+        
+        if "include server.py" not in manifest_content:
+            print("🔧 更新MANIFEST.in...")
+            # 在文件开头添加server.py
+            lines = manifest_content.split('\n')
+            # 找到第一个include语句的位置
+            insert_pos = 0
+            for i, line in enumerate(lines):
+                if line.strip().startswith('include '):
+                    insert_pos = i
+                    break
+            
+            lines.insert(insert_pos, "include server.py                    # 主服务器脚本")
+            
+            with open(manifest_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(lines))
+            print("✅ MANIFEST.in已更新")
+        else:
+            print("✅ MANIFEST.in配置已正确")
+    else:
+        print("⚠️  未找到MANIFEST.in文件")
+    
+    print("✅ 包结构准备完成")
+
 def build_package():
     """构建Python包"""
     print("🏗️ 构建Python包...")
@@ -332,10 +417,13 @@ def main():
         project_info = get_project_info()
         print(f"📦 项目: {project_info['name']} v{project_info['version']}")
         
-        # 3. 构建包
+        # 3. 准备包结构
+        prepare_package_structure()
+        
+        # 4. 构建包
         dist_files = build_package()
         
-        # 4. 选择发布方式
+        # 5. 选择发布方式
         print("\n📤 发布选项:")
         print("1. 仅发布到TestPyPI（推荐首次发布）")
         print("2. 发布到TestPyPI + 正式PyPI")
@@ -346,7 +434,7 @@ def main():
         success_testpypi = False
         success_pypi = False
         
-        # 5. 根据选择获取相应token并发布
+        # 6. 根据选择获取相应token并发布
         if choice in ['1', '2']:
             testpypi_token = get_testpypi_token()
             success_testpypi = publish_to_testpypi(testpypi_token)
@@ -355,10 +443,10 @@ def main():
             pypi_token = get_pypi_token()
             success_pypi = publish_to_pypi(pypi_token)
         
-        # 6. 保存配置
+        # 7. 保存配置
         save_publish_config(project_info, success_testpypi, success_pypi)
         
-        # 7. 测试指导
+        # 8. 测试指导
         if success_pypi:
             test_installation()
         

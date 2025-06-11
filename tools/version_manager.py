@@ -14,10 +14,34 @@ from typing import Tuple, Optional
 # 项目根目录
 project_root = Path(__file__).parent.parent
 
+def _read_current_version():
+    """从文件中直接读取当前版本，避免模块缓存问题"""
+    version_file = Path(__file__).parent.parent / "backend/version.py"
+    if not version_file.exists():
+        raise ImportError("无法找到 backend/version.py 文件")
+    
+    content = version_file.read_text(encoding='utf-8')
+    
+    # 解析 __version__
+    version_match = re.search(r'__version__\s*=\s*"([^"]*)"', content)
+    if not version_match:
+        raise ImportError("无法在 backend/version.py 中找到 __version__")
+    
+    # 解析 __version_info__
+    info_match = re.search(r'__version_info__\s*=\s*\(([^)]*)\)', content)
+    if not info_match:
+        raise ImportError("无法在 backend/version.py 中找到 __version_info__")
+    
+    version_str = version_match.group(1)
+    info_str = info_match.group(1)
+    version_info = tuple(int(x.strip()) for x in info_str.split(','))
+    
+    return version_str, version_info
+
 try:
-    from backend.version import __version__, __version_info__
-except ImportError:
-    print("❌ 无法导入版本信息，请确保项目结构正确")
+    __version__, __version_info__ = _read_current_version()
+except ImportError as e:
+    print(f"❌ 无法读取版本信息: {e}")
     sys.exit(1)
 
 class VersionManager:
@@ -25,8 +49,8 @@ class VersionManager:
     
     def __init__(self, project_root: Path):
         self.project_root = project_root
-        self.current_version = __version__
-        self.current_version_info = __version_info__
+        # 动态读取版本以避免缓存问题
+        self.current_version, self.current_version_info = _read_current_version()
         
         # 需要更新版本号的文件列表
         self.version_files = {
@@ -77,10 +101,11 @@ class VersionManager:
         
         try:
             content = file_path.read_text(encoding='utf-8')
-            # 使用正则表达式替换版本号
-            pattern = r'version\s*=\s*"[^"]*"'
-            replacement = f'version = "{new_version}"'
-            new_content = re.sub(pattern, replacement, content)
+            # 使用更精确的正则表达式，只匹配项目版本号，不匹配python_version等
+            # 匹配 [project] 部分下的 version 字段
+            pattern = r'(\[project\].*?\n)version\s*=\s*"[^"]*"'
+            replacement = f'\\1version = "{new_version}"'
+            new_content = re.sub(pattern, replacement, content, flags=re.DOTALL)
             
             if new_content != content:
                 file_path.write_text(new_content, encoding='utf-8')

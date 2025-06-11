@@ -4,8 +4,6 @@
 验证资源管理和连接稳定性
 """
 
-import sys
-import os
 import time
 
 # 移除src目录路径添加

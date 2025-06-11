@@ -4,6 +4,7 @@
 验证移除超时清理逻辑后的基本功能
 """
 
+import sys
 import time
 import threading
 from backend.server_pool import ServerPool, get_server_pool, get_managed_server, release_managed_server
@@ -165,11 +166,20 @@ def test_server_pool_refactor():
         print('  ✅ 简化了代码结构，提升了可维护性')
         print('  ✅ 消除了时间依赖，降低了复杂性')
         
-        return True
+        # 测试通过，不返回任何值（pytest兼容）
+        pass
     else:
         print('❌ 部分验证指标未满足，需要进一步检查')
-        return False
+        assert False, "部分验证指标未满足"
 
 if __name__ == '__main__':
-    success = test_server_pool_refactor()
-    sys.exit(0 if success else 1)
+    try:
+        test_server_pool_refactor()
+        print('\n✅ 所有测试都通过了！')
+        sys.exit(0)
+    except AssertionError:
+        print('\n❌ 测试失败')
+        sys.exit(1)
+    except Exception as e:
+        print(f'\n❌ 测试过程中出现错误: {e}')
+        sys.exit(1)

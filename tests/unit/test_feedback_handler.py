@@ -123,19 +123,27 @@ class TestProcessFeedbackToMcp:
         
         assert len(feedback_items) == 1
         assert feedback_items[0] == mock_text_instance
-        mock_text_content.assert_called_once()
+        # 验证TextContent被调用时传入了正确的参数
+        expected_text = "用户文字反馈：测试反馈\n提交时间：2024-01-01T12:00:00Z"
+        mock_text_content.assert_called_once_with(type="text", text=expected_text)
     
     @patch('backend.feedback_handler.MCPImage')
     def test_process_feedback_images_only(self, mock_mcp_image):
         """测试仅图片反馈"""
+        import base64
         handler = FeedbackHandler()
+        
+        # 使用正确的Base64编码数据
+        image1_data = base64.b64encode(b'image1_data').decode('utf-8')
+        image2_data = base64.b64encode(b'image2_data').decode('utf-8')
+        
         result = {
             'success': True,
             'has_text': False,
             'has_images': True,
             'images': [
-                {'data': b'image1_data'},
-                {'data': b'image2_data'}
+                {'data': image1_data},
+                {'data': image2_data}
             ]
         }
         
@@ -153,14 +161,19 @@ class TestProcessFeedbackToMcp:
     @patch('backend.feedback_handler.MCPImage')
     def test_process_feedback_complete(self, mock_mcp_image, mock_text_content):
         """测试完整反馈（文字+图片）"""
+        import base64
         handler = FeedbackHandler()
+        
+        # 使用正确的Base64编码数据
+        image_data = base64.b64encode(b'image_data').decode('utf-8')
+        
         result = {
             'success': True,
             'has_text': True,
             'text_feedback': '测试反馈',
             'timestamp': '2024-01-01T12:00:00Z',
             'has_images': True,
-            'images': [{'data': b'image_data'}]
+            'images': [{'data': image_data}]
         }
         
         mock_text_instance = MagicMock()
@@ -171,5 +184,6 @@ class TestProcessFeedbackToMcp:
         feedback_items = handler.process_feedback_to_mcp(result)
         
         assert len(feedback_items) == 2
-        assert feedback_items[0] == mock_text_instance
-        assert feedback_items[1] == mock_image_instance
+        assert feedback_items[0] == mock_image_instance  # 图片先添加
+        assert feedback_items[1] == mock_text_instance   # 文本后添加
+        mock_mcp_image.assert_called_once_with(data=b'image_data', format='png')
